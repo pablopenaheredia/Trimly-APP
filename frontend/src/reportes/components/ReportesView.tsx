@@ -10,12 +10,13 @@ import {
 } from "lucide-react";
 import type { DatosReporte } from "../types/reportes.types";
 import "./ReportesView.css";
+import { API_URL } from '../../config/api';
 
 // Servicios definidos ANTES del componente
 const reportesService = {
   async getReportes(fechaInicio: string, fechaFin: string) {
     const response = await fetch(
-      `http://localhost:3000/reportes/completo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
+      `${API_URL}/reportes/completo?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`
     );
     if (!response.ok) throw new Error("Error al obtener reportes");
     return await response.json();
@@ -24,7 +25,7 @@ const reportesService = {
 
 const serviciosService = {
   async getServicios() {
-    const response = await fetch("http://localhost:3000/servicios");
+    const response = await fetch(`${API_URL}/servicios`);
     if (!response.ok) throw new Error("Error al obtener servicios");
     return await response.json();
   },
@@ -32,7 +33,7 @@ const serviciosService = {
 
 const productosService = {
   async getProductos() {
-    const response = await fetch("http://localhost:3000/producto");
+    const response = await fetch(`${API_URL}/producto`);
     if (!response.ok) throw new Error("Error al obtener productos");
     return await response.json();
   },

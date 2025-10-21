@@ -1,5 +1,6 @@
 // src/components/EliminarClienteModal.tsx
 
+import { API_URL } from '../config/api';
 import "./EliminarClienteModal.css"; // Asegúrate de crear este archivo CSS
 
 interface Cliente {
@@ -30,7 +31,7 @@ export default function EliminarClienteModal({
   const handleConfirmDeactivate = async () => {
     try {
       const res = await fetch(
-        `http://localhost:3000/clientes/${clienteToDeactivate.id}`,
+  `${API_URL}/clientes/${clienteToDeactivate.id}`,
         {
           method: "PATCH", // Usamos PATCH para actualizar el estado 'activo'
           headers: { "Content-Type": "application/json" },

@@ -78,7 +78,7 @@ export default function EliminarTurnoModal({
 
     try {
       const res = await fetch(
-        `http://localhost:3000/turnos/${turnoToDelete.id}`,
+  `${API_URL}/turnos/${turnoToDelete.id}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },

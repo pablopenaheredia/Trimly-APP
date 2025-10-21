@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from '../config/api';
 import { FaPhoneAlt, FaEnvelope, FaCalendarAlt } from "react-icons/fa"; // Ya no necesitamos FaCheckCircle
 import "./NuevoClienteModal.css"; // Asegúrate de que este archivo CSS existe
 
@@ -203,7 +204,7 @@ export default function NuevoClienteModal({
     // 2. Validación de duplicados (DNI, Email y TELÉFONO) haciendo una llamada al backend
     try {
       console.log("3. Iniciando verificación de duplicados...");
-      const resClientes = await fetch("http://localhost:3000/clientes");
+  const resClientes = await fetch(`${API_URL}/clientes`);
 
       if (!resClientes.ok) {
         console.error(
@@ -282,7 +283,7 @@ export default function NuevoClienteModal({
       "9. Todas las validaciones de frontend y duplicados pasaron. Enviando al backend..."
     );
     try {
-      const res = await fetch("http://localhost:3000/clientes", {
+  const res = await fetch(`${API_URL}/clientes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

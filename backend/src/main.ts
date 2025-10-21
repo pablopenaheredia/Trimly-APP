@@ -15,10 +15,10 @@ async function bootstrap() {
     }),
   );
 
-  // Habilitar CORS
-  // MUY IMPORTANTE: Cambia 'http://localhost:5173' por el puerto exacto de tu frontend React
+  // Habilitar CORS dinámicamente usando FRONTEND_URL (se configura en Vercel)
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   app.enableCors({
-    origin: 'http://localhost:5173', // <--- VERIFICA ESTE PUERTO. Puede ser 3000, 5173, etc.
+    origin: frontendUrl,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Asegúrate de que PATCH esté aquí
     credentials: true,
   });

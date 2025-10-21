@@ -122,7 +122,7 @@ export default function EditarUsuarioModal({
 
     try {
       const res = await fetch(
-        `http://localhost:3000/usuarios/${usuarioToEdit!.id}`,
+  `${API_URL}/usuarios/${usuarioToEdit!.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

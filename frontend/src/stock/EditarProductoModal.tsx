@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from '../config/api';
 import "./NuevoProductoModal.css";
 import { usePermissions } from "../hooks/usePermissions";
 
@@ -79,7 +80,7 @@ export default function EditarProductoModal({ show, onClose, producto, onProduct
 
     // Validar nombre duplicado (excepto el propio)
     try {
-      const res = await fetch("http://localhost:3000/producto");
+  const res = await fetch(`${API_URL}/producto`);
       const productos = await res.json();
       const existe = productos.some(
         (p: any) =>
@@ -111,7 +112,7 @@ export default function EditarProductoModal({ show, onClose, producto, onProduct
         updateData.estado = form.estado || "Alto";
       }
       
-      const res = await fetch(`http://localhost:3000/producto/${producto?.id}`, {
+  const res = await fetch(`${API_URL}/producto/${producto?.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updateData),

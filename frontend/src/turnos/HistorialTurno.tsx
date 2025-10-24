@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaClock, FaCheckCircle, FaTimesCircle, FaTimes } from "react-icons/fa";
 import "./HistorialTurno.css";
+import { API_URL } from '../config/api';
 
 interface Props {
   show: boolean;
@@ -48,7 +49,7 @@ const HistorialTurnosModal: React.FC<Props> = ({
     setLoading(true);
     setError(null);
 
-    fetch("http://localhost:3000/turnos")
+    fetch(`${API_URL}/turnos`)
       .then((res) => {
         if (!res.ok) throw new Error(`Error ${res.status}`);
         return res.json();

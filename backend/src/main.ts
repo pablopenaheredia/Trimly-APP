@@ -1,28 +1,37 @@
-// src/main.ts
+// ...existing code...
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common'; // <-- Importa ValidationPipe
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Habilita el ValidationPipe globalmente para que los DTOs funcionen
+  // Habilita el ValidationPipe globalmente
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Esto eliminará propiedades que no estén en tus DTOs (buena práctica)
-      forbidNonWhitelisted: true, // Esto lanzará un error si el frontend envía propiedades que no están en el DTO
-      transform: true, // Esto transforma el payload de la request a una instancia de tu clase DTO
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
     }),
   );
 
-  // Habilitar CORS
-  // MUY IMPORTANTE: Cambia 'http://localhost:5173' por el puerto exacto de tu frontend React
+  // CORS con validación mejorada usando FRONTEND_URL
+  const frontendUrl = process.env.FRONTEND_URL;
+
   app.enableCors({
-    origin: 'http://localhost:5173', // <--- VERIFICA ESTE PUERTO. Puede ser 3000, 5173, etc.
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Asegúrate de que PATCH esté aquí
+    origin: (origin, callback) => {
+      if (!origin || origin === frontendUrl || origin === frontendUrl + '/') {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS blocked'));
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  await app.listen(3000); // Tu puerto del backend (normalmente 3000)
+  await app.listen(process.env.PORT || 3000);
 }
+
 bootstrap();
+// ...existing code...

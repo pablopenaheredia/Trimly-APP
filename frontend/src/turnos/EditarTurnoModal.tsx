@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./EditarTurnoModal.css";
+import { API_URL } from '../config/api';
 import SuccessModal from "../components/SuccessModal";
 
 interface Turno {
@@ -147,7 +148,7 @@ export default function EditarTurnoModal({
     };
 
     try {
-      const res = await fetch(`http://localhost:3000/turnos/${turnoToEdit.id}`, {
+      const res = await fetch(`${API_URL}/turnos/${turnoToEdit.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSend),

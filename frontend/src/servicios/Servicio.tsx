@@ -1,6 +1,7 @@
 // frontend/src/servicios/Servicio.tsx - ACTUALIZAR CON MODAL DE ELIMINACIÓN
 import { useState, useEffect } from "react";
 import "./Servicio.css";
+import { API_URL } from '../config/api';
 import Tabla from "../components/Tabla";
 import NuevoServicioModal from "./NuevoServicioModal";
 import EditarServicioModal from "./EditarServicioModal";
@@ -43,7 +44,7 @@ export default function Servicios() {
   // Cargar servicios desde el backend
   const cargarServicios = async () => {
     try {
-      const res = await fetch("http://localhost:3000/servicios");
+  const res = await fetch(`${API_URL}/servicios`);
       const data = await res.json();
       setServicios(data);
     } catch (error) {

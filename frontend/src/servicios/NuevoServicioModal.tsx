@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./NuevoServicioModal.css";
+import { API_URL } from '../config/api';
 
 interface Props {
   show: boolean;
@@ -42,7 +43,7 @@ export default function NuevoServicioModal({ show, onClose, onServicioCreado }: 
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:3000/servicios");
+  const res = await fetch(`${API_URL}/servicios`);
       const servicios = await res.json();
       const existe = servicios.some(
         (s: any) => s.servicio.trim().toLowerCase() === form.servicio.trim().toLowerCase()
@@ -57,7 +58,7 @@ export default function NuevoServicioModal({ show, onClose, onServicioCreado }: 
     }
 
     try {
-      const res = await fetch("http://localhost:3000/servicios", {
+      const res = await fetch(`${API_URL}/servicios`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

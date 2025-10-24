@@ -3,6 +3,7 @@ import { FaUser, FaLock, FaEnvelope, FaUserShield } from "react-icons/fa";
 import SuccessModal from "../components/SuccessModal"; // Asegúrate de que esta ruta sea correcta
 import ErrorModal from "../components/ErrorModal"; // Importamos el ErrorModal
 import "./EditarUsuarioModal.css";
+import { API_URL } from '../config/api';
 
 interface Usuario {
   id: number;
@@ -122,7 +123,7 @@ export default function EditarUsuarioModal({
 
     try {
       const res = await fetch(
-        `http://localhost:3000/usuarios/${usuarioToEdit!.id}`,
+        `${API_URL}/usuarios/${usuarioToEdit!.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

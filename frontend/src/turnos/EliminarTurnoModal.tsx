@@ -1,5 +1,6 @@
 import React from "react";
 import "./EliminarTurnoModal.css";
+import { API_URL } from '../config/api';
 import SuccessModal from "../components/SuccessModal";
 import { useState } from "react";
 
@@ -78,7 +79,7 @@ export default function EliminarTurnoModal({
 
     try {
       const res = await fetch(
-        `http://localhost:3000/turnos/${turnoToDelete.id}`,
+        `${API_URL}/turnos/${turnoToDelete.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

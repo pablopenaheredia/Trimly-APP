@@ -1,6 +1,7 @@
 // frontend/src/servicios/EliminarServicioModal.tsx - CREAR ESTE ARCHIVO
 import React from 'react';
 import './EliminarServicioModal.css';
+import { API_URL } from '../config/api';
 
 interface Servicio {
   id: number;
@@ -31,7 +32,7 @@ export default function EliminarServicioModal({
 
   const handleConfirmDelete = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/servicios/${servicioToDelete.id}`, {
+      const res = await fetch(`${API_URL}/servicios/${servicioToDelete.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });

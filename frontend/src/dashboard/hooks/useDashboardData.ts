@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../../config/api';
 
 interface MetricasDashboard {
   turnosHoy: {
@@ -67,9 +68,9 @@ export const useDashboardData = () => {
     try {
       setCargando(true);
       const [respuestaMetricas, respuestaTurnos, respuestaNotificaciones] = await Promise.all([
-        fetch('http://localhost:3000/dashboard/metrics'),
-        fetch('http://localhost:3000/dashboard/upcoming-turnos'),
-        fetch('http://localhost:3000/dashboard/notifications'),
+        fetch(`${API_URL}/dashboard/metrics`),
+        fetch(`${API_URL}/dashboard/upcoming-turnos`),
+        fetch(`${API_URL}/dashboard/notifications`),
       ]);
 
       if (!respuestaMetricas.ok || !respuestaTurnos.ok || !respuestaNotificaciones.ok) {

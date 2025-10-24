@@ -12,6 +12,7 @@ import {
   FaArrowDown,
 } from "react-icons/fa";
 import "./HistorialClienteModal.css";
+import { API_URL } from '../config/api';
 
 interface Cliente {
   id: number;
@@ -101,14 +102,14 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
     setLoading(true);
     try {
       // Cargar productos
-      const productosRes = await fetch("http://localhost:3000/productos");
+  const productosRes = await fetch(`${API_URL}/productos`);
       if (productosRes.ok) {
         const productosData = await productosRes.json();
         setProductos(productosData);
       }
 
       // Cargar servicios
-      const serviciosRes = await fetch("http://localhost:3000/servicios");
+  const serviciosRes = await fetch(`${API_URL}/servicios`);
       if (serviciosRes.ok) {
         const serviciosData = await serviciosRes.json();
         setServicios(serviciosData);
@@ -116,7 +117,7 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
 
       // Cargar turnos del cliente
       const turnosRes = await fetch(
-        `http://localhost:3000/clientes/${cliente.id}/turnos`
+        `${API_URL}/clientes/${cliente.id}/turnos`
       );
       if (turnosRes.ok) {
         const turnosData = await turnosRes.json();
@@ -128,7 +129,7 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
 
       // Cargar facturas del cliente
       const facturasRes = await fetch(
-        `http://localhost:3000/clientes/${cliente.id}/facturas`
+        `${API_URL}/clientes/${cliente.id}/facturas`
       );
       if (facturasRes.ok) {
         const facturasData = await facturasRes.json();

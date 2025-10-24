@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaBoxOpen, FaEdit, FaTrash } from "react-icons/fa";
 import "./ProductosDashboard.css";
+import { API_URL } from '../config/api';
 import NuevoProductoModal from "./NuevoProductoModal"; 
 import EditarProductoModal from "./EditarProductoModal";
 import EliminarProductoModal from "./EliminarProductoModal";
@@ -38,7 +39,7 @@ export default function ProductosDashboard() {
   useEffect(() => {
     const cargarProductos = async () => {
       try {
-        const res = await fetch("http://localhost:3000/producto"); 
+  const res = await fetch(`${API_URL}/producto`); 
         const data = await res.json();
         setProductos(data); 
       } catch (error) {

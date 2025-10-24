@@ -80,8 +80,9 @@ export default function EliminarTurnoModal({
       const res = await fetch(
         `http://localhost:3000/turnos/${turnoToDelete.id}`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ estado: "cancelado" }),
         }
       );
 

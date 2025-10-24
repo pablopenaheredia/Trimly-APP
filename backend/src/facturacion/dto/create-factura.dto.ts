@@ -26,6 +26,10 @@ export class CreateFacturaDetalleDto {
   @IsOptional()
   @IsNumber()
   turnoId?: number;
+
+  @IsOptional()
+  @IsString()
+  nota?: string;
 }
 
 export class CreateFacturaDto {

@@ -157,20 +157,22 @@
 }
 
 .navbar-logout-btn {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
   border: none;
   border-radius: 12px;
   background: #e74c3c;
   color: #ffffff;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(231, 76, 60, 0.25);
   position: relative;
-  gap: 4px;
+  gap: 2px;
+  padding: 8px;
 }
 
 .navbar-logout-btn:hover {
@@ -182,16 +184,17 @@
 /* Ícono del logout */
 .navbar-logout-btn .logout-icon {
   color: #ffffff;
-  font-size: 16px;
+  font-size: 20px;
   display: block;
 }
 
 /* Texto de logout */
 .navbar-logout-btn .logout-text {
   color: #ffffff;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  display: none;
+  display: block;
+  white-space: nowrap;
 }
 
 /* Tooltips mejorados */

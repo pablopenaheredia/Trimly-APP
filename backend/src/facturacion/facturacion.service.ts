@@ -42,6 +42,7 @@ export class FacturacionService {
         cantidad: item.cantidad,
         precioUnitario: item.precioUnitario,
         subtotal: item.subtotal,
+        turnoId: item.turnoId, // ✅ Guardar turnoId en el detalle
       });
       const savedDetalle = await this.detalleRepo.save(detalle);
       detallesGuardados.push(savedDetalle);
@@ -87,6 +88,12 @@ export class FacturacionService {
         if (turno) {
           turno.estado = 'cobrado';
           turno.factura = factura; // ✅ Asociar la factura con el turno
+          
+          // ✅ Actualizar la nota del turno si viene en el payload
+          if (item.nota !== undefined) {
+            turno.notas = item.nota;
+          }
+          
           await this.turnoRepo.save(turno);
         }
       }

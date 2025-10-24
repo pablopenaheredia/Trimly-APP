@@ -40,6 +40,7 @@ interface Turno {
   servicio: { servicio: string; precio: number };
   fecha: string;
   estado: string;
+  notas?: string;
 }
 
 interface ItemFactura {
@@ -49,6 +50,7 @@ interface ItemFactura {
   precioUnitario: number;
   stockDisponible: number;
   esTurnoServicio?: boolean;
+  turnoId?: number; // ID del turno para asociar la nota
   esTurnoProducto?: boolean;
   productoOriginalId?: number;
 }
@@ -68,6 +70,7 @@ const FacturacionTab: React.FC = () => {
   const [clienteBloqueado, setClienteBloqueado] = useState(false);
   const [tipoMensaje, setTipoMensaje] = useState<string>("");
   const [metodoPago, setMetodoPago] = useState<string>("Efectivo");
+  const [notasTurnos, setNotasTurnos] = useState<{ [turnoId: number]: string }>({});
 
   const mostrarMensaje = (texto: string, tipo: string) => {
     setMensaje(texto);
@@ -232,6 +235,13 @@ const FacturacionTab: React.FC = () => {
         items.filter((item) => item.productoId !== turno.id)
       );
 
+      // Limpiar la nota del turno
+      setNotasTurnos((prev) => {
+        const newNotas = { ...prev };
+        delete newNotas[turno.id];
+        return newNotas;
+      });
+
       // Si no quedan más turnos, desbloquear cliente
       const turnosRestantes = itemsFactura.filter(
         (item) => item.productoId !== turno.id && 
@@ -278,8 +288,18 @@ const FacturacionTab: React.FC = () => {
         cantidad: 1,
         precioUnitario: turno.servicio.precio,
         stockDisponible: 999,
+        esTurnoServicio: true,
+        turnoId: turno.id, // Asociar el turno para las notas
       },
     ]);
+
+    // Cargar la nota existente del turno (si tiene)
+    if (turno.notas) {
+      setNotasTurnos((prev) => ({
+        ...prev,
+        [turno.id]: turno.notas || "",
+      }));
+    }
 
     mostrarMensaje(
       `${turno.cliente.nombre} - ${turno.servicio.servicio} agregado a la factura`,
@@ -534,6 +554,7 @@ const FacturacionTab: React.FC = () => {
             precioUnitario: Number(item.precioUnitario),
             subtotal: Number(item.cantidad) * Number(item.precioUnitario),
             turnoId: turno?.id ? Number(turno.id) : undefined,
+            nota: item.turnoId ? notasTurnos[item.turnoId] : undefined, // Incluir nota
           };
         } else if (servicios.some((s) => s.id === item.productoId)) {
           // Es un servicio agregado directamente
@@ -595,6 +616,7 @@ const FacturacionTab: React.FC = () => {
       setBusquedaCliente("");
       setMostrarDropdownClientes(false);
       setClienteBloqueado(false); // ✅ IMPORTANTE: Desbloquear cliente
+      setNotasTurnos({}); // Limpiar notas de los turnos
       
       // ✅ Recargar turnos pendientes para refrescar la vista
       try {
@@ -951,6 +973,7 @@ const FacturacionTab: React.FC = () => {
                     <th>Cantidad</th>
                     <th>Precio Unitario</th>
                     <th>Subtotal</th>
+                    <th>Nota</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -1020,6 +1043,24 @@ const FacturacionTab: React.FC = () => {
                     </td>
                     <td>
                       <strong>${(item.cantidad * item.precioUnitario).toFixed(2)}</strong>
+                    </td>
+                    <td>
+                      {item.turnoId ? (
+                        <input
+                          type="text"
+                          value={notasTurnos[item.turnoId] || ""}
+                          onChange={(e) =>
+                            setNotasTurnos((prev) => ({
+                              ...prev,
+                              [item.turnoId!]: e.target.value,
+                            }))
+                          }
+                          className="nota-input"
+                          placeholder="Nota del servicio..."
+                        />
+                      ) : (
+                        <span className="sin-nota">-</span>
+                      )}
                     </td>
                     <td>
                       <button onClick={() => eliminarProducto(item.productoId)}>

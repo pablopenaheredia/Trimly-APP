@@ -51,6 +51,7 @@ interface FacturaDetalle {
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
+  turnoId?: number;
 }
 
 interface FacturaHistorial {
@@ -83,6 +84,8 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
   );
   const [turnos, setTurnos] = useState<TurnoHistorial[]>([]);
   const [facturas, setFacturas] = useState<FacturaHistorial[]>([]);
+  const [productos, setProductos] = useState<any[]>([]);
+  const [servicios, setServicios] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
@@ -97,6 +100,20 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
 
     setLoading(true);
     try {
+      // Cargar productos
+      const productosRes = await fetch("http://localhost:3000/productos");
+      if (productosRes.ok) {
+        const productosData = await productosRes.json();
+        setProductos(productosData);
+      }
+
+      // Cargar servicios
+      const serviciosRes = await fetch("http://localhost:3000/servicios");
+      if (serviciosRes.ok) {
+        const serviciosData = await serviciosRes.json();
+        setServicios(serviciosData);
+      }
+
       // Cargar turnos del cliente
       const turnosRes = await fetch(
         `http://localhost:3000/clientes/${cliente.id}/turnos`
@@ -131,7 +148,9 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
 
   const formatearFecha = (fechaStr: string) => {
     const fecha = new Date(fechaStr);
-    return fecha.toLocaleDateString("es-ES", {
+    // Ajustar timezone para evitar que reste un día
+    const fechaLocal = new Date(fecha.getTime() + fecha.getTimezoneOffset() * 60000);
+    return fechaLocal.toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -143,36 +162,60 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
     return isNaN(num) ? 0 : num;
   };
 
-  // Combinar turnos y facturas en un historial unificado como v0
+  // Combinar turnos y facturas en un historial unificado
   const historialCombinado: ServicioHistorial[] = [
-    // Convertir turnos a formato de v0
-    ...turnos.map((turno) => ({
-      fecha: formatearFecha(turno.fecha),
-      servicio: turno.servicio?.servicio || "Servicio no disponible",
-      profesional: turno.usuario
-        ? `${turno.usuario.nombre} ${turno.usuario.apellido}`
-        : "No asignado",
-      productos: [], // Los turnos no tienen productos asociados directamente
-      nota: turno.notas || "Sin notas",
-      monto: formatearPrecio(turno.servicio?.precio),
-    })),
-    // Convertir servicios de facturas a formato de v0
-    ...facturas.flatMap((factura) =>
-      factura.detalles
-        .filter((detalle) => detalle.tipo_item === "servicio")
-        .map((detalle) => ({
-          fecha: formatearFecha(factura.createdAt),
-          servicio: `Servicio #${detalle.itemId}`,
-          profesional: "Profesional no especificado",
-          productos:
-            facturas
-              .find((f) => f.id === factura.id)
-              ?.detalles.filter((d) => d.tipo_item === "producto")
-              .map((p) => `Producto #${p.itemId}`) || [],
-          nota: `Método de pago: ${factura.metodoPago}`,
-          monto: formatearPrecio(detalle.subtotal),
-        }))
-    ),
+    // Incluir TODOS los turnos
+    ...turnos.map((turno) => {
+      // Si el turno está cobrado, buscar su factura para mostrar el monto real
+      if (turno.estado === 'cobrado') {
+        const facturaDelTurno = facturas.find((f) => 
+          f.detalles.some((d) => d.turnoId === turno.id)
+        );
+        
+        if (facturaDelTurno) {
+          // Calcular el monto TOTAL de la factura (servicios + productos)
+          const montoTotal = facturaDelTurno.detalles.reduce((total, detalle) => {
+            return total + formatearPrecio(detalle.subtotal);
+          }, 0);
+          
+          // Obtener los nombres de los productos
+          const productosNombres = facturaDelTurno.detalles
+            .filter((d) => d.tipo_item === "producto")
+            .map((p) => {
+              const producto = productos.find((prod) => prod.id === p.itemId);
+              if (producto) {
+                return `${producto.nombre} (ID: #${producto.id})`;
+              }
+              return `Producto #${p.itemId}`;
+            });
+          
+          return {
+            fecha: formatearFecha(facturaDelTurno.createdAt),
+            servicio: turno.servicio?.servicio || "Servicio no disponible",
+            profesional: turno.usuario
+              ? `${turno.usuario.nombre} ${turno.usuario.apellido}`
+              : "No asignado",
+            productos: productosNombres,
+            nota: turno.notas || `Método de pago: ${facturaDelTurno.metodoPago}`,
+            monto: montoTotal,
+          };
+        }
+      }
+      
+      // Para turnos pendientes o cancelados
+      return {
+        fecha: formatearFecha(turno.fecha),
+        servicio: turno.servicio?.servicio || "Servicio no disponible",
+        profesional: turno.usuario
+          ? `${turno.usuario.nombre} ${turno.usuario.apellido}`
+          : "No asignado",
+        productos: [],
+        nota: turno.estado === 'cancelado' 
+          ? `CANCELADO - ${turno.notas || "Sin notas"}` 
+          : turno.notas || "Sin notas",
+        monto: turno.estado === 'cancelado' ? 0 : formatearPrecio(turno.servicio?.precio),
+      };
+    }),
   ];
 
   // Ordenar historial

@@ -139,6 +139,11 @@ export class TurnosService {
       updatedData.notas = updateTurnoDto.notas; // Change this from notasAdicionales to notas
     }
 
+    // Handle estado field
+    if (updateTurnoDto.estado) {
+      updatedData.estado = updateTurnoDto.estado;
+    }
+
     // Update the entity
     await this.turnoRepository.update(id, updatedData);
 

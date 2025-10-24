@@ -26,4 +26,7 @@ export class FacturaDetalle {
 
   @Column('decimal', { precision: 10, scale: 2 })
   subtotal: number;
+
+  @Column({ nullable: true })
+  turnoId?: number;
 }

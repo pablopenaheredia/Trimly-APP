@@ -513,6 +513,35 @@
   font-weight: 500;
 }
 
+/* Estilos para el campo de nota del turno */
+.nota-input {
+  width: 100%;
+  min-width: 150px;
+  padding: 6px 10px;
+  border: 1px solid #e0e6ed;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #333;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.nota-input:focus {
+  outline: none;
+  border-color: #00e6f6;
+  box-shadow: 0 0 0 2px rgba(0, 230, 246, 0.2);
+}
+
+.nota-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.sin-nota {
+  color: #999;
+  font-style: italic;
+}
+
 .stock-info {
   display: block;
   font-size: 0.7rem;

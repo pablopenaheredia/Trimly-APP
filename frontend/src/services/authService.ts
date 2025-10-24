@@ -18,8 +18,6 @@ export interface AuthResponse {
   token: string;
 }
 
-import { API_URL } from '../config/api';
-
 class AuthService {
   private readonly TOKEN_KEY = 'trimly_token';
   private readonly USER_KEY = 'trimly_user';
@@ -27,7 +25,7 @@ class AuthService {
   // Hacer login
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-  const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch('http://localhost:3000/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -192,7 +190,7 @@ class AuthService {
     if (!token) return false;
 
     try {
-  const response = await fetch(`${API_URL}/auth/validate`, {
+      const response = await fetch('http://localhost:3000/auth/validate', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

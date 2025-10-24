@@ -32,7 +32,7 @@ export default function EliminarUsuarioModal({
   const handleConfirmDeactivate = async () => {
     try {
       const res = await fetch(
-  `${API_URL}/usuarios/${usuarioToDeactivate.id}`,
+        `http://localhost:3000/usuarios/${usuarioToDeactivate.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

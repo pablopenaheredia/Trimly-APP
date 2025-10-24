@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from '../config/api';
 import { FaPhoneAlt, FaEnvelope, FaCalendarAlt } from "react-icons/fa";
 import "./EditarClienteModal.css";
 
@@ -202,13 +201,13 @@ export default function EditarClienteModal({
 
     const isEditing = clienteToEdit !== undefined;
     const url = isEditing
-  ? `${API_URL}/clientes/${clienteToEdit!.id}`
-  : `${API_URL}/clientes`;
+      ? `http://localhost:3000/clientes/${clienteToEdit!.id}`
+      : "http://localhost:3000/clientes";
     const method = isEditing ? "PATCH" : "POST";
 
     // 2. Validación de duplicados (DNI, Email y TELÉFONO) haciendo una llamada al backend
     try {
-  const resClientes = await fetch(`${API_URL}/clientes`);
+      const resClientes = await fetch("http://localhost:3000/clientes");
       if (!resClientes.ok) {
         throw new Error(
           "No se pudo obtener la lista de clientes para validación de duplicados."

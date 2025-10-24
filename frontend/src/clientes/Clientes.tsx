@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { API_URL } from '../config/api';
 import "./Clientes.css";
 import Tabla from "../components/Tabla";
 import EditarClienteModal from "./EditarClienteModal";
@@ -90,7 +89,7 @@ export default function Clientes() {
     try {
       // Solo cargar facturas del cliente (las visitas reales son las facturadas)
       const facturasRes = await fetch(
-        `${API_URL}/clientes/${clienteId}/facturas`
+        `http://localhost:3000/clientes/${clienteId}/facturas`
       );
       let facturas: FacturaHistorial[] = [];
       if (facturasRes.ok) {
@@ -111,7 +110,7 @@ export default function Clientes() {
   // ✅ Función para cargar clientes CON visitas calculadas
   const fetchClientes = async () => {
     try {
-  const res = await fetch(`${API_URL}/clientes`);
+      const res = await fetch("http://localhost:3000/clientes");
       if (!res.ok) throw new Error("No se pudo obtener clientes");
       const data = await res.json();
       const clientesArray = Array.isArray(data) ? data : [];

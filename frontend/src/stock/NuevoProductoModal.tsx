@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from '../config/api';
 import "./NuevoProductoModal.css";
 import { usePermissions } from "../hooks/usePermissions";
 
@@ -64,7 +63,7 @@ export default function NuevoProductoModal({ show, onClose, onProductoCreado }: 
     e.preventDefault();
 
     try {
-  const res = await fetch(`${API_URL}/producto`);
+      const res = await fetch("http://localhost:3000/producto");
       const productos = await res.json();
       const existe = productos.some(
         (p: any) => p.nombre.trim().toLowerCase() === form.nombre.trim().toLowerCase()
@@ -89,7 +88,7 @@ export default function NuevoProductoModal({ show, onClose, onProductoCreado }: 
         estado: hasPermission('productos.edit.stock') ? (form.estado || "Alto") : "Bajo",
       };
       
-      const res = await fetch(`${API_URL}/producto`, {
+      const res = await fetch("http://localhost:3000/producto", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),

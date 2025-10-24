@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { FaUser, FaLock, FaEnvelope, FaUserShield } from "react-icons/fa";
 import ErrorModal from "../components/ErrorModal"; // Asegúrate de tener esta importación
 import SuccessModal from "../components/SuccessModal"; // Importar SuccessModal
-import { API_URL } from '../config/api';
 import "./NuevoUsuarioModal.css";
 
 interface NuevoUsuarioFormData {
@@ -119,7 +118,7 @@ export default function NuevoUsuarioModal({
     }
 
     try {
-  const res = await fetch(`${API_URL}/usuarios`);
+      const res = await fetch("http://localhost:3000/usuarios");
       const existingUsers: UsuarioExistente[] = await res.json();
 
       const usernameExists = existingUsers.some(
@@ -162,7 +161,7 @@ export default function NuevoUsuarioModal({
         email: form.email || null,
       };
 
-      const createResponse = await fetch(`${API_URL}/usuarios`, {
+      const createResponse = await fetch("http://localhost:3000/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSend),
@@ -342,10 +341,3 @@ export default function NuevoUsuarioModal({
     </div>
   );
 }
-
-  const createResponse = await fetch(`${API_URL}/usuarios`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dataToSend),
-  });
-

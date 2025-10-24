@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from '../config/api';
 import "./NuevoServicioModal.css";
 
 interface Servicio {
@@ -57,7 +56,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElemen
 
   // Validación de servicio duplicado (excepto el propio)
   try {
-  const res = await fetch(`${API_URL}/servicios`);
+    const res = await fetch("http://localhost:3000/servicios");
     const servicios = await res.json();
     const existe = servicios.some(
       (s: any) =>
@@ -74,7 +73,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElemen
   }
 
   try {
-  const res = await fetch(`${API_URL}/servicios/${servicioEditar.id}`, {
+    const res = await fetch(`http://localhost:3000/servicios/${servicioEditar.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

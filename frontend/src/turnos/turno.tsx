@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import "./calendar-dark.css";
-import { API_URL } from '../config/api';
 import { FaPlus, FaClock, FaUser, FaEdit, FaTrash, FaCut } from "react-icons/fa"; 
 import "./turno.css";
 import NuevoTurnoModal from "./NuevoTurnoModal";
@@ -30,25 +29,25 @@ export default function Turnos() {
 
   useEffect(() => {
     // --- Fetch turnos ---
-  fetch(`${API_URL}/turnos`)
+    fetch("http://localhost:3000/turnos")
       .then((res) => res.json())
       .then((data) => setTurnos(Array.isArray(data) ? data : []))
       .catch(() => setTurnos([]));
 
     // --- Fetch clientes ---
-  fetch(`${API_URL}/clientes`)
+    fetch("http://localhost:3000/clientes")
       .then((res) => res.json())
       .then((data) => setClientes(Array.isArray(data) ? data : []))
       .catch(() => setClientes([]));
 
     // --- Fetch servicios ---
-  fetch(`${API_URL}/servicios`)
+    fetch("http://localhost:3000/servicios")
       .then((res) => res.json())
       .then((data) => setServicios(Array.isArray(data) ? data : []))
       .catch(() => setServicios([]));
 
     // --- Fetch usuarios ---
-  fetch(`${API_URL}/usuarios`)
+    fetch("http://localhost:3000/usuarios")
       .then((res) => res.json())
       .then((data) => setUsuarios(Array.isArray(data) ? data : []))
       .catch(() => setUsuarios([]));
@@ -69,7 +68,7 @@ export default function Turnos() {
   // Function to reload data after a turno is edited
   const handleTurnoEditado = async () => {
     try {
-  const res = await fetch(`${API_URL}/turnos`);
+      const res = await fetch("http://localhost:3000/turnos");
       const data = await res.json();
       setTurnos(Array.isArray(data) ? data : []);
       setShowEditModal(false);
@@ -82,7 +81,7 @@ export default function Turnos() {
   // Function to reload data after a turno is deleted
   const handleTurnoCancelado = async () => {
     try {
-  const res = await fetch(`${API_URL}/turnos`);
+      const res = await fetch("http://localhost:3000/turnos");
       const data = await res.json();
       setTurnos(Array.isArray(data) ? data : []);
       setShowDeleteModal(false);
@@ -321,7 +320,7 @@ export default function Turnos() {
         show={showModal}
         onClose={() => setShowModal(false)}
         onTurnoCreado={async () => {
-          const res = await fetch(`${API_URL}/turnos`);
+          const res = await fetch("http://localhost:3000/turnos");
           const data = await res.json();
           setTurnos(Array.isArray(data) ? data : []);
           // Ya no cerramos el modal aquí, se cierra desde el SuccessModal

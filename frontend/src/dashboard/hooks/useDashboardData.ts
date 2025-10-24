@@ -56,8 +56,6 @@ interface Notificaciones {
   };
 }
 
-import { API_URL } from '../../config/api';
-
 export const useDashboardData = () => {
   const [metricas, setMetricas] = useState<MetricasDashboard | null>(null);
   const [proximosTurnos, setProximosTurnos] = useState<ProximoTurno[]>([]);
@@ -69,9 +67,9 @@ export const useDashboardData = () => {
     try {
       setCargando(true);
       const [respuestaMetricas, respuestaTurnos, respuestaNotificaciones] = await Promise.all([
-        fetch(`${API_URL}/dashboard/metrics`),
-        fetch(`${API_URL}/dashboard/upcoming-turnos`),
-        fetch(`${API_URL}/dashboard/notifications`),
+        fetch('http://localhost:3000/dashboard/metrics'),
+        fetch('http://localhost:3000/dashboard/upcoming-turnos'),
+        fetch('http://localhost:3000/dashboard/notifications'),
       ]);
 
       if (!respuestaMetricas.ok || !respuestaTurnos.ok || !respuestaNotificaciones.ok) {

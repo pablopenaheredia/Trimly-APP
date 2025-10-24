@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { API_URL } from '../config/api';
 import "./Usuarios.css";
 import Tabla from "../components/Tabla";
 import NuevoUsuarioModal from "./NuevoUsuarioModal";
@@ -50,7 +49,7 @@ export default function Usuarios() {
 
   const fetchUsuarios = async () => {
     try {
-  const res = await fetch(`${API_URL}/usuarios`);
+      const res = await fetch("http://localhost:3000/usuarios");
       if (!res.ok) throw new Error("No se pudo obtener usuarios");
       const data = await res.json();
       setUsuarios(Array.isArray(data) ? data : []);

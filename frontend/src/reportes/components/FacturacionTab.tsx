@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { API_URL } from '../../config/api';
 import { FaPlus, FaMinus, FaTrash, FaFilePdf } from "react-icons/fa";
 import "./FacturacionTab.css";
 import { generarFacturaPDF } from "../../utils/pdfGenerator";
@@ -163,7 +162,7 @@ const FacturacionTab: React.FC = () => {
   useEffect(() => {
     const cargarClientes = async () => {
       try {
-  const res = await fetch(`${API_URL}/clientes`);
+        const res = await fetch("http://localhost:3000/clientes");
         if (!res.ok) throw new Error("Error al cargar clientes");
         const data = await res.json();
         const clientesActivos = data.filter((c: Cliente) => c.activo);
@@ -422,7 +421,7 @@ const FacturacionTab: React.FC = () => {
   useEffect(() => {
     const cargarProductos = async () => {
       try {
-  const res = await fetch(`${API_URL}/producto`);
+        const res = await fetch("http://localhost:3000/producto");
         if (!res.ok) {
           throw new Error("Error al cargar productos");
         }
@@ -441,7 +440,7 @@ const FacturacionTab: React.FC = () => {
   useEffect(() => {
     const cargarServicios = async () => {
       try {
-  const res = await fetch(`${API_URL}/servicios/activos`);
+        const res = await fetch("http://localhost:3000/servicios/activos");
         if (!res.ok) {
           throw new Error("Error al cargar servicios");
         }
@@ -460,7 +459,7 @@ const FacturacionTab: React.FC = () => {
   useEffect(() => {
     const cargarTurnosPendientes = async () => {
       try {
-  const res = await fetch(`${API_URL}/turnos`);
+        const res = await fetch("http://localhost:3000/turnos");
         if (!res.ok) {
           throw new Error("Error al cargar los turnos");
         }
@@ -565,7 +564,7 @@ const FacturacionTab: React.FC = () => {
       console.log("Payload enviado:", payload);
       console.log("Método de pago:", metodoPago);
 
-  const res = await fetch(`${API_URL}/facturacion/finalizar`, {
+      const res = await fetch("http://localhost:3000/facturacion/finalizar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -599,7 +598,7 @@ const FacturacionTab: React.FC = () => {
       
       // ✅ Recargar turnos pendientes para refrescar la vista
       try {
-  const turnosRes = await fetch(`${API_URL}/turnos`);
+        const turnosRes = await fetch("http://localhost:3000/turnos");
         if (turnosRes.ok) {
           const turnosData = await turnosRes.json();
           const pendientes = turnosData.filter((t: Turno) => t.estado === 'pendiente');

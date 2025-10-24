@@ -1,6 +1,5 @@
 // frontend/src/clientes/HistorialClienteModal.tsx
 import React, { useState, useEffect } from "react";
-import { API_URL } from '../config/api';
 import {
   FaTimes,
   FaUser,
@@ -100,7 +99,7 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
     try {
       // Cargar turnos del cliente
       const turnosRes = await fetch(
-  `${API_URL}/clientes/${cliente.id}/turnos`
+        `http://localhost:3000/clientes/${cliente.id}/turnos`
       );
       if (turnosRes.ok) {
         const turnosData = await turnosRes.json();
@@ -112,7 +111,7 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
 
       // Cargar facturas del cliente
       const facturasRes = await fetch(
-  `${API_URL}/clientes/${cliente.id}/facturas`
+        `http://localhost:3000/clientes/${cliente.id}/facturas`
       );
       if (facturasRes.ok) {
         const facturasData = await facturasRes.json();

@@ -147,7 +147,7 @@ export default function EditarTurnoModal({
     };
 
     try {
-  const res = await fetch(`${API_URL}/turnos/${turnoToEdit.id}`, {
+      const res = await fetch(`http://localhost:3000/turnos/${turnoToEdit.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataToSend),

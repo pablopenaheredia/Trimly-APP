@@ -17,7 +17,7 @@ interface Producto {
   marca: string;
   precio: number;
   stock: number;
-  estado: string;
+  estado: "Alto" | "Medio" | "Bajo";
 }
 
 export default function ProductosDashboard() {

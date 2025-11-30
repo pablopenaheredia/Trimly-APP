@@ -25,18 +25,16 @@ export class ReportesService {
     private readonly facturaDetalleRepository: Repository<FacturaDetalle>,
   ) {}
 
-  // Helper para crear fechas usando hora local del dispositivo
+  // Helper para crear fechas con zona horaria correcta
   private crearFechaInicio(fecha: string): Date {
-    // fecha viene como "2025-11-30", crear al inicio del día hora local
-    const [year, month, day] = fecha.split('-').map(Number);
-    const date = new Date(year, month - 1, day, 0, 0, 0, 0);
+    // Crear fecha al inicio del día en UTC
+    const date = new Date(fecha + 'T00:00:00.000Z');
     return date;
   }
 
   private crearFechaFin(fecha: string): Date {
-    // fecha viene como "2025-11-30", crear al final del día hora local
-    const [year, month, day] = fecha.split('-').map(Number);
-    const date = new Date(year, month - 1, day, 23, 59, 59, 999);
+    // Crear fecha al final del día en UTC (23:59:59.999)
+    const date = new Date(fecha + 'T23:59:59.999Z');
     return date;
   }
 

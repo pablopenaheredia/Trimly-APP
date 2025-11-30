@@ -133,6 +133,16 @@
   color: #ff4d4d;
   box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
 }
+.estado-activo {
+  background: #0e3e1a;
+  color: #1ed760;
+  box-shadow: 0 0 10px rgba(30, 215, 96, 0.5);
+}
+.estado-inactivo {
+  background: #4a1515;
+  color: #ff4d4d;
+  box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+}
 
 .btn-accion {
   background: none;

@@ -136,6 +136,7 @@ export class ReportesService {
     try {
       // Obtener todos los productos
       const todosProductos = await this.productoRepository.find();
+      console.log('Total productos en BD:', todosProductos.length);
       
       // Obtener detalles de facturas del período para productos
       let detallesProductos: FacturaDetalle[] = [];
@@ -148,14 +149,20 @@ export class ReportesService {
           relations: ['detalles'],
         });
         
+        console.log('Facturas encontradas:', facturas.length);
+        
         facturas.forEach(factura => {
+          console.log('Factura ID:', factura.id, 'Detalles:', factura.detalles?.length || 0);
           factura.detalles?.forEach(detalle => {
+            console.log('Detalle - tipo_item:', detalle.tipo_item, 'itemId:', detalle.itemId, 'cantidad:', detalle.cantidad);
             if (detalle.tipo_item === 'producto') {
               detallesProductos.push(detalle);
             }
           });
         });
       }
+      
+      console.log('Detalles de productos encontrados:', detallesProductos.length);
 
       // Mapear productos con sus estadísticas
       return todosProductos.map(producto => {

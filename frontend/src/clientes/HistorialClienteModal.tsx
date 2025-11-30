@@ -133,6 +133,8 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
       );
       if (facturasRes.ok) {
         const facturasData = await facturasRes.json();
+        console.log("Facturas cargadas:", facturasData);
+        console.log("Detalles de primera factura:", facturasData[0]?.detalles);
         setFacturas(facturasData);
       } else {
         console.error("Error cargando facturas:", facturasRes.status);
@@ -185,11 +187,14 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
             .filter((d) => d.tipo_item === "producto")
             .map((p) => {
               const producto = productos.find((prod) => prod.id === p.itemId);
+              console.log(`Buscando producto con ID ${p.itemId}, encontrado:`, producto);
               if (producto) {
                 return `${producto.nombre} (x${p.cantidad})`;
               }
               return `Producto #${p.itemId} (x${p.cantidad})`;
             });
+          
+          console.log("Productos para turno:", productosNombres);
           
           return {
             fecha: formatearFecha(facturaDelTurno.createdAt),

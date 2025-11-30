@@ -91,14 +91,14 @@ export class ReportesService {
           COALESCE(SUM(fd.cantidad), 0) as cantidad,
           COALESCE(SUM(fd.subtotal), 0) as ingresos
         FROM servicio s
-        LEFT JOIN factura_detalle fd ON s.id = fd.itemId AND fd.tipo_item = 'servicio'
-        LEFT JOIN factura f ON fd.facturaId = f.id
+        INNER JOIN factura_detalle fd ON s.id = fd.itemId AND fd.tipo_item = 'servicio'
+        INNER JOIN factura f ON fd.facturaId = f.id
       `;
 
       const params: any[] = [];
 
       if (fechaInicio && fechaFin) {
-        query += ` WHERE f.id IS NULL OR (DATE(f.createdAt) BETWEEN ? AND ?)`;
+        query += ` WHERE DATE(f.createdAt) BETWEEN ? AND ?`;
         params.push(fechaInicio, fechaFin);
       }
 
@@ -132,14 +132,14 @@ async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
         COALESCE(SUM(fd.cantidad), 0) as cantidad,
         COALESCE(SUM(fd.subtotal), 0) as ingresos
       FROM producto p
-      LEFT JOIN factura_detalle fd ON p.id = fd.itemId AND fd.tipo_item = 'producto'
-      LEFT JOIN factura f ON fd.facturaId = f.id
+      INNER JOIN factura_detalle fd ON p.id = fd.itemId AND fd.tipo_item = 'producto'
+      INNER JOIN factura f ON fd.facturaId = f.id
     `;
 
     const params: any[] = [];
 
     if (fechaInicio && fechaFin) {
-      query += ` WHERE f.id IS NULL OR (DATE(f.createdAt) BETWEEN ? AND ?)`;
+      query += ` WHERE DATE(f.createdAt) BETWEEN ? AND ?`;
       params.push(fechaInicio, fechaFin);
     }
 

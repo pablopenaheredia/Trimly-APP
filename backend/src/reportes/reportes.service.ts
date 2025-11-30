@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { Turno } from '../turnos/turno.entity';
 import { Cliente } from '../clientes/cliente.entity';
 import { Servicio } from '../servicios/servicio.entity';
@@ -47,31 +47,37 @@ export class ReportesService {
 
   async obtenerResumenGeneral(fechaInicio: string, fechaFin: string) {
     try {
-      // Usar consulta SQL directa con los nombres reales de las tablas
-      const query = `
-        SELECT
-          COUNT(DISTINCT f.id) as total_turnos,
-          COALESCE(SUM(fd.subtotal), 0) as ingresos_totales,
-          COALESCE(SUM(CASE WHEN fd.tipo_item = 'servicio' THEN fd.cantidad ELSE 0 END), 0) as total_servicios,
-          COALESCE(SUM(CASE WHEN fd.tipo_item = 'producto' THEN fd.cantidad ELSE 0 END), 0) as total_productos
-        FROM factura f
-        LEFT JOIN factura_detalle fd ON f.id = fd."facturaId"
-        WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
-      `;
+      // Obtener facturas del período con sus detalles
+      const facturas = await this.facturaRepository.find({
+        where: {
+          createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+        },
+        relations: ['detalles'],
+      });
 
-      const result = await this.facturaRepository.query(query, [fechaInicio, fechaFin]);
-      const row = result[0] || {};
+      let ingresos_totales = 0;
+      let total_servicios = 0;
+      let total_productos = 0;
+
+      facturas.forEach(factura => {
+        factura.detalles?.forEach(detalle => {
+          ingresos_totales += Number(detalle.subtotal) || 0;
+          if (detalle.tipo_item === 'servicio') {
+            total_servicios += Number(detalle.cantidad) || 0;
+          } else if (detalle.tipo_item === 'producto') {
+            total_productos += Number(detalle.cantidad) || 0;
+          }
+        });
+      });
 
       return {
-        total_turnos: Number(row.total_turnos ?? 0),
-        ingresos_totales: Number(row.ingresos_totales ?? 0),
-        total_servicios: Number(row.total_servicios ?? 0),
-        total_productos: Number(row.total_productos ?? 0),
+        total_turnos: facturas.length,
+        ingresos_totales,
+        total_servicios,
+        total_productos,
       };
     } catch (error) {
       console.error('Error al obtener resumen general:', error);
-      console.error('Detalles del error:', error.message);
-      // Retornar valores por defecto en lugar de lanzar error
       return {
         total_turnos: 0,
         ingresos_totales: 0,
@@ -83,139 +89,120 @@ export class ReportesService {
 
   async obtenerEstadisticasServicios(fechaInicio?: string, fechaFin?: string) {
     try {
-      let query: string;
-      let params: any[] = [];
-
+      // Obtener todos los servicios
+      const todosServicios = await this.servicioRepository.find();
+      
+      // Obtener detalles de facturas del período para servicios
+      let detallesServicios: FacturaDetalle[] = [];
+      
       if (fechaInicio && fechaFin) {
-        // Con filtro de fechas: usar subquery para filtrar facturas por fecha
-        query = `
-          SELECT
-            s.id,
-            s.servicio as nombre,
-            s.precio,
-            COALESCE(SUM(fd.cantidad), 0) as cantidad,
-            COALESCE(SUM(fd.subtotal), 0) as ingresos
-          FROM servicio s
-          LEFT JOIN (
-            SELECT fd2.*
-            FROM factura_detalle fd2
-            INNER JOIN factura f ON fd2."facturaId" = f.id
-            WHERE fd2.tipo_item = 'servicio'
-              AND CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
-          ) fd ON s.id = fd."itemId"
-          GROUP BY s.id, s.servicio, s.precio
-          ORDER BY ingresos DESC
-        `;
-        params = [fechaInicio, fechaFin];
-      } else {
-        // Sin filtro de fechas: mostrar todos los servicios con sus totales históricos
-        query = `
-          SELECT
-            s.id,
-            s.servicio as nombre,
-            s.precio,
-            COALESCE(SUM(fd.cantidad), 0) as cantidad,
-            COALESCE(SUM(fd.subtotal), 0) as ingresos
-          FROM servicio s
-          LEFT JOIN factura_detalle fd ON s.id = fd."itemId" AND fd.tipo_item = 'servicio'
-          GROUP BY s.id, s.servicio, s.precio
-          ORDER BY ingresos DESC
-        `;
+        const facturas = await this.facturaRepository.find({
+          where: {
+            createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+          },
+          relations: ['detalles'],
+        });
+        
+        facturas.forEach(factura => {
+          factura.detalles?.forEach(detalle => {
+            if (detalle.tipo_item === 'servicio') {
+              detallesServicios.push(detalle);
+            }
+          });
+        });
       }
 
-      const result = await this.servicioRepository.query(query, params);
+      // Mapear servicios con sus estadísticas
+      return todosServicios.map(servicio => {
+        const detallesDelServicio = detallesServicios.filter(d => d.itemId === servicio.id);
+        const cantidad = detallesDelServicio.reduce((sum, d) => sum + (Number(d.cantidad) || 0), 0);
+        const ingresos = detallesDelServicio.reduce((sum, d) => sum + (Number(d.subtotal) || 0), 0);
 
-      return result.map((item: any) => ({
-        id: Number(item.id),
-        nombre: item.nombre || '',
-        precio: Number(item.precio ?? 0),
-        cantidad: Number(item.cantidad ?? 0),
-        ingresos: Number(item.ingresos ?? 0),
-      }));
+        return {
+          id: servicio.id,
+          nombre: servicio.servicio || '',
+          precio: Number(servicio.precio) || 0,
+          cantidad,
+          ingresos,
+        };
+      }).sort((a, b) => b.ingresos - a.ingresos);
     } catch (error) {
       console.error('Error al obtener estadísticas de servicios:', error);
-      console.error('Detalles del error:', error.message);
-      // Retornar array vacío en lugar de lanzar error
       return [];
     }
   }
 
-async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
-  try {
-    let query: string;
-    let params: any[] = [];
+  async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
+    try {
+      // Obtener todos los productos
+      const todosProductos = await this.productoRepository.find();
+      
+      // Obtener detalles de facturas del período para productos
+      let detallesProductos: FacturaDetalle[] = [];
+      
+      if (fechaInicio && fechaFin) {
+        const facturas = await this.facturaRepository.find({
+          where: {
+            createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+          },
+          relations: ['detalles'],
+        });
+        
+        facturas.forEach(factura => {
+          factura.detalles?.forEach(detalle => {
+            if (detalle.tipo_item === 'producto') {
+              detallesProductos.push(detalle);
+            }
+          });
+        });
+      }
 
-    if (fechaInicio && fechaFin) {
-      // Con filtro de fechas: usar subquery para filtrar facturas por fecha
-      query = `
-        SELECT
-          p.id,
-          p.nombre,
-          p.precio,
-          p.stock,
-          COALESCE(SUM(fd.cantidad), 0) as cantidad,
-          COALESCE(SUM(fd.subtotal), 0) as ingresos
-        FROM producto p
-        LEFT JOIN (
-          SELECT fd2.*
-          FROM factura_detalle fd2
-          INNER JOIN factura f ON fd2."facturaId" = f.id
-          WHERE fd2.tipo_item = 'producto'
-            AND CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
-        ) fd ON p.id = fd."itemId"
-        GROUP BY p.id, p.nombre, p.precio, p.stock
-        ORDER BY ingresos DESC
-      `;
-      params = [fechaInicio, fechaFin];
-    } else {
-      // Sin filtro de fechas: mostrar todos los productos con sus totales históricos
-      query = `
-        SELECT
-          p.id,
-          p.nombre,
-          p.precio,
-          p.stock,
-          COALESCE(SUM(fd.cantidad), 0) as cantidad,
-          COALESCE(SUM(fd.subtotal), 0) as ingresos
-        FROM producto p
-        LEFT JOIN factura_detalle fd ON p.id = fd."itemId" AND fd.tipo_item = 'producto'
-        GROUP BY p.id, p.nombre, p.precio, p.stock
-        ORDER BY ingresos DESC
-      `;
+      // Mapear productos con sus estadísticas
+      return todosProductos.map(producto => {
+        const detallesDelProducto = detallesProductos.filter(d => d.itemId === producto.id);
+        const cantidad = detallesDelProducto.reduce((sum, d) => sum + (Number(d.cantidad) || 0), 0);
+        const ingresos = detallesDelProducto.reduce((sum, d) => sum + (Number(d.subtotal) || 0), 0);
+
+        return {
+          id: producto.id,
+          nombre: producto.nombre || '',
+          precio: Number(producto.precio) || 0,
+          stock: producto.stock !== null ? Number(producto.stock) : 0,
+          cantidad,
+          ingresos,
+        };
+      }).sort((a, b) => b.ingresos - a.ingresos);
+    } catch (error) {
+      console.error('Error al obtener estadísticas de productos:', error);
+      return [];
     }
-
-    const result = await this.productoRepository.query(query, params);
-
-    return result.map((item: any) => ({
-      id: Number(item.id),
-      nombre: item.nombre || '',
-      precio: Number(item.precio ?? 0),
-      stock: item.stock !== null ? Number(item.stock) : 0,
-      cantidad: Number(item.cantidad ?? 0),
-      ingresos: Number(item.ingresos ?? 0),
-    }));
-  } catch (error) {
-    console.error('Error al obtener estadísticas de productos:', error);
-    console.error('Detalles del error:', error.message);
-    // Retornar array vacío en lugar de lanzar error
-    return [];
   }
-}
 
   async obtenerFacturacionPorPeriodo(fechaInicio: string, fechaFin: string) {
     try {
-      const query = `
-        SELECT 
-          CAST(f."createdAt" AS DATE) as fecha,
-          COALESCE(SUM(fd.subtotal), 0) as total
-        FROM factura f
-        LEFT JOIN factura_detalle fd ON f.id = fd."facturaId"
-        WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
-        GROUP BY CAST(f."createdAt" AS DATE)
-        ORDER BY fecha ASC
-      `;
+      const facturas = await this.facturaRepository.find({
+        where: {
+          createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+        },
+        relations: ['detalles'],
+      });
 
-      return await this.facturaRepository.query(query, [fechaInicio, fechaFin]);
+      // Agrupar por fecha
+      const porFecha: { [key: string]: number } = {};
+      
+      facturas.forEach(factura => {
+        const fecha = factura.createdAt.toISOString().split('T')[0];
+        if (!porFecha[fecha]) {
+          porFecha[fecha] = 0;
+        }
+        factura.detalles?.forEach(detalle => {
+          porFecha[fecha] += Number(detalle.subtotal) || 0;
+        });
+      });
+
+      return Object.entries(porFecha)
+        .map(([fecha, total]) => ({ fecha, total }))
+        .sort((a, b) => a.fecha.localeCompare(b.fecha));
     } catch (error) {
       console.error('Error al obtener facturación por período:', error);
       throw new Error('Error al obtener facturación por período');

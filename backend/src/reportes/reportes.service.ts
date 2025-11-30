@@ -47,6 +47,7 @@ export class ReportesService {
 
   async obtenerResumenGeneral(fechaInicio: string, fechaFin: string) {
     try {
+      console.log('Obteniendo resumen general para:', fechaInicio, 'a', fechaFin);
       // Usar consulta SQL directa con los nombres reales de las tablas
       const query = `
         SELECT
@@ -55,11 +56,12 @@ export class ReportesService {
           COALESCE(SUM(CASE WHEN fd.tipo_item = 'servicio' THEN fd.cantidad ELSE 0 END), 0) as total_servicios,
           COALESCE(SUM(CASE WHEN fd.tipo_item = 'producto' THEN fd.cantidad ELSE 0 END), 0) as total_productos
         FROM factura f
-        LEFT JOIN factura_detalle fd ON f.id = fd.facturaId
-        WHERE DATE(f.createdAt) BETWEEN ? AND ?
+        LEFT JOIN factura_detalle fd ON f.id = fd."facturaId"
+        WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
       `;
 
       const result = await this.facturaRepository.query(query, [fechaInicio, fechaFin]);
+      console.log('Resultado resumen:', result);
       const row = result[0] || {};
 
       return {
@@ -83,6 +85,7 @@ export class ReportesService {
 
   async obtenerEstadisticasServicios(fechaInicio?: string, fechaFin?: string) {
     try {
+      console.log('Obteniendo estadísticas de servicios para:', fechaInicio, 'a', fechaFin);
       let query = `
         SELECT
           s.id,
@@ -91,20 +94,23 @@ export class ReportesService {
           COALESCE(SUM(fd.cantidad), 0) as cantidad,
           COALESCE(SUM(fd.subtotal), 0) as ingresos
         FROM servicio s
-        INNER JOIN factura_detalle fd ON s.id = fd.itemId AND fd.tipo_item = 'servicio'
-        INNER JOIN factura f ON fd.facturaId = f.id
+        INNER JOIN factura_detalle fd ON s.id = fd."itemId" AND fd.tipo_item = 'servicio'
+        INNER JOIN factura f ON fd."facturaId" = f.id
       `;
 
       const params: any[] = [];
 
       if (fechaInicio && fechaFin) {
-        query += ` WHERE DATE(f.createdAt) BETWEEN ? AND ?`;
+        query += ` WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2`;
         params.push(fechaInicio, fechaFin);
       }
 
       query += ` GROUP BY s.id, s.servicio, s.precio ORDER BY ingresos DESC`;
 
+      console.log('Query servicios:', query);
+      console.log('Parámetros:', params);
       const result = await this.servicioRepository.query(query, params);
+      console.log('Resultado servicios:', result);
 
       return result.map((item: any) => ({
         id: Number(item.id),
@@ -123,6 +129,7 @@ export class ReportesService {
 
 async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
   try {
+    console.log('Obteniendo estadísticas de productos para:', fechaInicio, 'a', fechaFin);
     let query = `
       SELECT
         p.id,
@@ -132,20 +139,23 @@ async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
         COALESCE(SUM(fd.cantidad), 0) as cantidad,
         COALESCE(SUM(fd.subtotal), 0) as ingresos
       FROM producto p
-      INNER JOIN factura_detalle fd ON p.id = fd.itemId AND fd.tipo_item = 'producto'
-      INNER JOIN factura f ON fd.facturaId = f.id
+      INNER JOIN factura_detalle fd ON p.id = fd."itemId" AND fd.tipo_item = 'producto'
+      INNER JOIN factura f ON fd."facturaId" = f.id
     `;
 
     const params: any[] = [];
 
     if (fechaInicio && fechaFin) {
-      query += ` WHERE DATE(f.createdAt) BETWEEN ? AND ?`;
+      query += ` WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2`;
       params.push(fechaInicio, fechaFin);
     }
 
     query += ` GROUP BY p.id, p.nombre, p.precio, p.stock ORDER BY ingresos DESC`;
 
+    console.log('Query productos:', query);
+    console.log('Parámetros:', params);
     const result = await this.productoRepository.query(query, params);
+    console.log('Resultado productos:', result);
 
     return result.map((item: any) => ({
       id: Number(item.id),
@@ -167,12 +177,12 @@ async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
     try {
       const query = `
         SELECT 
-          DATE(f.createdAt) as fecha,
+          CAST(f."createdAt" AS DATE) as fecha,
           COALESCE(SUM(fd.subtotal), 0) as total
         FROM factura f
-        LEFT JOIN factura_detalle fd ON f.id = fd.facturaId
-        WHERE DATE(f.createdAt) BETWEEN ? AND ?
-        GROUP BY DATE(f.createdAt)
+        LEFT JOIN factura_detalle fd ON f.id = fd."facturaId"
+        WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
+        GROUP BY CAST(f."createdAt" AS DATE)
         ORDER BY fecha ASC
       `;
 

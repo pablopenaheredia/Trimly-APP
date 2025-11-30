@@ -192,37 +192,31 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
   };
 
   const getServiciosCompletos = () => {
-    if (todosServicios.length === 0) {
-      return [];
-    }
-
-    return todosServicios.map((servicio) => {
-      const reporteServicio = datos.servicios.find(
-        (s) => s.id === servicio.id || s.nombre === getNombreServicio(servicio)
+    // Solo mostrar servicios que están en el reporte (con cantidad > 0)
+    return datos.servicios.map((reporteServicio) => {
+      const servicioCompleto = todosServicios.find(
+        (s) => s.id === reporteServicio.id || getNombreServicio(s) === reporteServicio.nombre
       );
 
       return {
-        ...servicio,
-        cantidad: reporteServicio?.cantidad || 0,
-        ingresos: reporteServicio?.ingresos || 0,
+        ...(servicioCompleto || { id: reporteServicio.id, nombre: reporteServicio.nombre }),
+        cantidad: reporteServicio.cantidad,
+        ingresos: reporteServicio.ingresos,
       };
     });
   };
 
   const getProductosCompletos = () => {
-    if (todosProductos.length === 0) {
-      return [];
-    }
-
-    return todosProductos.map((producto) => {
-      const reporteProducto = datos.productos.find(
-        (p) => p.id === producto.id || p.nombre === producto.nombre
+    // Solo mostrar productos que están en el reporte (con cantidad > 0)
+    return datos.productos.map((reporteProducto) => {
+      const productoCompleto = todosProductos.find(
+        (p) => p.id === reporteProducto.id || p.nombre === reporteProducto.nombre
       );
 
       return {
-        ...producto,
-        cantidad: reporteProducto?.cantidad || 0,
-        ingresos: reporteProducto?.ingresos || 0,
+        ...(productoCompleto || { id: reporteProducto.id, nombre: reporteProducto.nombre }),
+        cantidad: reporteProducto.cantidad,
+        ingresos: reporteProducto.ingresos,
       };
     });
   };
@@ -443,53 +437,56 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
               </div>
             </div>
 
-            <div className="items-list">
-              {serviciosFiltrados.length > 0 ? (
-                serviciosFiltrados.map((servicio) => (
-                  <div
-                    key={servicio.id}
-                    className={`item-card ${
-                      servicio.cantidad > 0 ? "has-sales" : ""
-                    }`}
-                  >
-                    <div className="item-left">
-                      <div className="icon-circle servicios">
-                        <Scissors size={20} className="text-purple-400" />
+            <div className="items-list-scrollable">
+              <div className="items-list">
+                {serviciosFiltrados.length > 0 ? (
+                  serviciosFiltrados.map((servicio) => (
+                    <div
+                      key={servicio.id}
+                      className={`item-card ${
+                        servicio.cantidad > 0 ? "has-sales" : ""
+                      }`}
+                    >
+                      <div className="item-left">
+                        <div className="icon-circle servicios">
+                          <Scissors size={20} className="text-purple-400" />
+                        </div>
+                        <div className="item-info">
+                          <h4 className="item-name">
+                            {getNombreServicio(servicio)}
+                          </h4>
+                          <p className="item-subtitle">
+                            {servicio.cantidad || 0} servicios realizados • {formatDuration(servicio.duracion)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="item-info">
-                        <h4 className="item-name">
-                          {getNombreServicio(servicio)}
-                        </h4>
-                        <p className="item-subtitle">
-                          {servicio.cantidad || 0} servicios realizados • {formatDuration(servicio.duracion)}
-                        </p>
+                      <div className="item-right">
+                        <div className="item-amount">
+                          {formatCurrency(servicio.ingresos || 0)}
+                        </div>
                       </div>
                     </div>
-                    <div className="item-right">
-                      <div className="item-amount">
-                        {formatCurrency(servicio.ingresos || 0)}
-                      </div>
-                    </div>
+                  ))
+                ) : (
+                  <div className="empty-state">
+                    <Scissors size={48} className="text-purple-400/50" />
+                    <p>
+                      {searchServicios
+                        ? "No se encontraron servicios con ese criterio"
+                        : "No se pudieron cargar los servicios"}
+                    </p>
+                    <p className="text-sm">
+                      {searchServicios
+                        ? "Intenta con otro término de búsqueda"
+                        : "Verifica que el backend esté ejecutándose"}
+                    </p>
                   </div>
-                ))
-              ) : (
-                <div className="empty-state">
-                  <Scissors size={48} className="text-purple-400/50" />
-                  <p>
-                    {searchServicios
-                      ? "No se encontraron servicios con ese criterio"
-                      : "No se pudieron cargar los servicios"}
-                  </p>
-                  <p className="text-sm">
-                    {searchServicios
-                      ? "Intenta con otro término de búsqueda"
-                      : "Verifica que el backend esté ejecutándose"}
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
 
-              {serviciosFiltrados.length > 0 && (
-                <div className="total-row servicios">
+            {serviciosFiltrados.length > 0 && (
+              <div className="total-row servicios">
                   <div className="total-left">
                     <div className="total-icon servicios">
                       <TrendingUp size={20} className="text-purple-400" />
@@ -508,8 +505,8 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
                     <p className="total-label">Ingresos totales</p>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -532,52 +529,55 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
               </div>
             </div>
 
-            <div className="items-list">
-              {productosFiltrados.length > 0 ? (
-                productosFiltrados.map((producto) => (
-                  <div
-                    key={producto.id}
-                    className={`item-card ${
-                      producto.cantidad > 0 ? "has-sales" : ""
-                    }`}
-                  >
-                    <div className="item-left">
-                      <div className="icon-circle productos">
-                        <Package size={20} className="text-cyan-400" />
+            <div className="items-list-scrollable">
+              <div className="items-list">
+                {productosFiltrados.length > 0 ? (
+                  productosFiltrados.map((producto) => (
+                    <div
+                      key={producto.id}
+                      className={`item-card ${
+                        producto.cantidad > 0 ? "has-sales" : ""
+                      }`}
+                    >
+                      <div className="item-left">
+                        <div className="icon-circle productos">
+                          <Package size={20} className="text-cyan-400" />
+                        </div>
+                        <div className="item-info">
+                          <h4 className="item-name">{producto.nombre}</h4>
+                          <p className="item-subtitle">
+                            {producto.cantidad || 0} unidades vendidas
+                            {producto.categoria && ` • ${producto.categoria}`}
+                          </p>
+                        </div>
                       </div>
-                      <div className="item-info">
-                        <h4 className="item-name">{producto.nombre}</h4>
-                        <p className="item-subtitle">
-                          {producto.cantidad || 0} unidades vendidas
-                          {producto.categoria && ` • ${producto.categoria}`}
-                        </p>
+                      <div className="item-right">
+                        <div className="item-amount">
+                          {formatCurrency(producto.ingresos || 0)}
+                        </div>
                       </div>
                     </div>
-                    <div className="item-right">
-                      <div className="item-amount">
-                        {formatCurrency(producto.ingresos || 0)}
-                      </div>
-                    </div>
+                  ))
+                ) : (
+                  <div className="empty-state">
+                    <Package size={48} className="text-cyan-400/50" />
+                    <p>
+                      {searchProductos
+                        ? "No se encontraron productos con ese criterio"
+                        : "No se pudieron cargar los productos"}
+                    </p>
+                    <p className="text-sm">
+                      {searchProductos
+                        ? "Intenta con otro término de búsqueda"
+                        : "Verifica que el backend esté ejecutándose"}
+                    </p>
                   </div>
-                ))
-              ) : (
-                <div className="empty-state">
-                  <Package size={48} className="text-cyan-400/50" />
-                  <p>
-                    {searchProductos
-                      ? "No se encontraron productos con ese criterio"
-                      : "No se pudieron cargar los productos"}
-                  </p>
-                  <p className="text-sm">
-                    {searchProductos
-                      ? "Intenta con otro término de búsqueda"
-                      : "Verifica que el backend esté ejecutándose"}
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
 
-              {productosFiltrados.length > 0 && (
-                <div className="total-row productos">
+            {productosFiltrados.length > 0 && (
+              <div className="total-row productos">
                   <div className="total-left">
                     <div className="total-icon productos">
                       <ShoppingCart size={20} className="text-cyan-400" />
@@ -596,8 +596,8 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
                     <p className="total-label">Ingresos totales</p>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>

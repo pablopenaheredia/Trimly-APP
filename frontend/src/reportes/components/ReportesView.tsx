@@ -487,23 +487,22 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
 
             {serviciosFiltrados.length > 0 && (
               <div className="total-row servicios">
-                  <div className="total-left">
-                    <div className="total-icon servicios">
-                      <TrendingUp size={20} className="text-purple-400" />
-                    </div>
-                    <div className="total-info">
-                      <h4 className="total-title">Total Servicios</h4>
-                      <p className="total-subtitle">
-                        {totalServiciosRealizados} servicios totales
-                      </p>
-                    </div>
+                <div className="total-left">
+                  <div className="total-icon servicios">
+                    <TrendingUp size={20} className="text-purple-400" />
                   </div>
-                  <div className="total-right">
-                    <div className="total-amount servicios">
-                      {formatCurrency(totalIngresosServicios)}
-                    </div>
-                    <p className="total-label">Ingresos totales</p>
+                  <div className="total-info">
+                    <h4 className="total-title">Total Servicios</h4>
+                    <p className="total-subtitle">
+                      {totalServiciosRealizados} servicios totales
+                    </p>
                   </div>
+                </div>
+                <div className="total-right">
+                  <div className="total-amount servicios">
+                    {formatCurrency(totalIngresosServicios)}
+                  </div>
+                  <p className="total-label">Ingresos totales</p>
                 </div>
               </div>
             )}
@@ -578,23 +577,22 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
 
             {productosFiltrados.length > 0 && (
               <div className="total-row productos">
-                  <div className="total-left">
-                    <div className="total-icon productos">
-                      <ShoppingCart size={20} className="text-cyan-400" />
-                    </div>
-                    <div className="total-info">
-                      <h4 className="total-title">Total Productos</h4>
-                      <p className="total-subtitle">
-                        {totalProductosVendidos} productos vendidos
-                      </p>
-                    </div>
+                <div className="total-left">
+                  <div className="total-icon productos">
+                    <ShoppingCart size={20} className="text-cyan-400" />
                   </div>
-                  <div className="total-right">
-                    <div className="total-amount productos">
-                      {formatCurrency(totalIngresosProductos)}
-                    </div>
-                    <p className="total-label">Ingresos totales</p>
+                  <div className="total-info">
+                    <h4 className="total-title">Total Productos</h4>
+                    <p className="total-subtitle">
+                      {totalProductosVendidos} productos vendidos
+                    </p>
                   </div>
+                </div>
+                <div className="total-right">
+                  <div className="total-amount productos">
+                    {formatCurrency(totalIngresosProductos)}
+                  </div>
+                  <p className="total-label">Ingresos totales</p>
                 </div>
               </div>
             )}

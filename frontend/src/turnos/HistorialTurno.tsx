@@ -56,12 +56,22 @@ const HistorialTurnosModal: React.FC<Props> = ({
       })
       .then((data) => {
         if (Array.isArray(data)) {
-          data.sort(
-            (a: Turno, b: Turno) =>
-              b.fecha.localeCompare(a.fecha) ||
-              (b.hora ?? "").localeCompare(a.hora ?? "")
-          );
-          setTurnos(data.slice(0, 20));
+          const hoy = new Date();
+          hoy.setHours(23, 59, 59, 999);
+
+          // Filtrar solo turnos hasta hoy y ordenar de más reciente a más antiguo
+          const turnosFiltrados = data
+            .filter((turno: Turno) => {
+              const fechaTurno = new Date(turno.fecha);
+              return fechaTurno <= hoy;
+            })
+            .sort(
+              (a: Turno, b: Turno) =>
+                new Date(b.fecha).getTime() - new Date(a.fecha).getTime() ||
+                (b.hora ?? "").localeCompare(a.hora ?? "")
+            );
+
+          setTurnos(turnosFiltrados.slice(0, 20));
         } else {
           setTurnos([]);
         }

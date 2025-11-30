@@ -17,7 +17,7 @@ interface Producto {
   marca: string;
   precio: number;
   stock: number;
-  estado: boolean;
+  estado: string;
 }
 
 export default function ProductosDashboard() {
@@ -124,10 +124,14 @@ export default function ProductosDashboard() {
       render: (value) => (
         <span
           className={`estado-badge ${
-            value ? "estado-activo" : "estado-inactivo"
+            value === "Alto"
+              ? "estado-alto"
+              : value === "Medio"
+              ? "estado-medio"
+              : "estado-bajo"
           }`}
         >
-          {value ? "Activo" : "Inactivo"}
+          {value}
         </span>
       ),
     },

@@ -206,7 +206,7 @@ export class DashboardService {
     // Filtrar turnos no atendidos desde 1 hora antes
     const proximosTurnos = turnosHoy
       .filter((t) => {
-        const estadoValido = t.estado === 'pendiente' || t.estado !== 'cobrado';
+        const estadoValido = t.estado === 'pendiente';
         const horaValida = t.hora >= horaLimiteStr;
         return estadoValido && horaValida;
       })

@@ -25,6 +25,19 @@ export class ReportesService {
     private readonly facturaDetalleRepository: Repository<FacturaDetalle>,
   ) {}
 
+  // Helper para crear fechas con zona horaria correcta
+  private crearFechaInicio(fecha: string): Date {
+    // Crear fecha al inicio del día en UTC
+    const date = new Date(fecha + 'T00:00:00.000Z');
+    return date;
+  }
+
+  private crearFechaFin(fecha: string): Date {
+    // Crear fecha al final del día en UTC (23:59:59.999)
+    const date = new Date(fecha + 'T23:59:59.999Z');
+    return date;
+  }
+
   async generarReporteCompleto(fechaInicio: string, fechaFin: string) {
     try {
       const [resumen, servicios, productos] = await Promise.all([
@@ -48,9 +61,14 @@ export class ReportesService {
   async obtenerResumenGeneral(fechaInicio: string, fechaFin: string) {
     try {
       // Obtener facturas del período con sus detalles
+      const fechaInicioDate = this.crearFechaInicio(fechaInicio);
+      const fechaFinDate = this.crearFechaFin(fechaFin);
+      
+      console.log('Buscando facturas entre:', fechaInicioDate.toISOString(), 'y', fechaFinDate.toISOString());
+      
       const facturas = await this.facturaRepository.find({
         where: {
-          createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+          createdAt: Between(fechaInicioDate, fechaFinDate),
         },
         relations: ['detalles'],
       });
@@ -96,9 +114,12 @@ export class ReportesService {
       let detallesServicios: FacturaDetalle[] = [];
       
       if (fechaInicio && fechaFin) {
+        const fechaInicioDate = this.crearFechaInicio(fechaInicio);
+        const fechaFinDate = this.crearFechaFin(fechaFin);
+        
         const facturas = await this.facturaRepository.find({
           where: {
-            createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+            createdAt: Between(fechaInicioDate, fechaFinDate),
           },
           relations: ['detalles'],
         });
@@ -142,20 +163,23 @@ export class ReportesService {
       let detallesProductos: FacturaDetalle[] = [];
       
       if (fechaInicio && fechaFin) {
+        const fechaInicioDate = this.crearFechaInicio(fechaInicio);
+        const fechaFinDate = this.crearFechaFin(fechaFin);
+        
         const facturas = await this.facturaRepository.find({
           where: {
-            createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+            createdAt: Between(fechaInicioDate, fechaFinDate),
           },
           relations: ['detalles'],
         });
         
-        console.log('Facturas encontradas:', facturas.length);
+        console.log('Productos - Facturas encontradas:', facturas.length);
         
         facturas.forEach(factura => {
-          console.log('Factura ID:', factura.id, 'Detalles:', factura.detalles?.length || 0);
+          console.log('Factura ID:', factura.id, 'createdAt:', factura.createdAt, 'Detalles:', factura.detalles?.length || 0);
           factura.detalles?.forEach(detalle => {
-            console.log('Detalle - tipo_item:', detalle.tipo_item, 'itemId:', detalle.itemId, 'cantidad:', detalle.cantidad);
             if (detalle.tipo_item === 'producto') {
+              console.log('Producto encontrado - itemId:', detalle.itemId, 'cantidad:', detalle.cantidad, 'subtotal:', detalle.subtotal);
               detallesProductos.push(detalle);
             }
           });
@@ -187,9 +211,12 @@ export class ReportesService {
 
   async obtenerFacturacionPorPeriodo(fechaInicio: string, fechaFin: string) {
     try {
+      const fechaInicioDate = this.crearFechaInicio(fechaInicio);
+      const fechaFinDate = this.crearFechaFin(fechaFin);
+      
       const facturas = await this.facturaRepository.find({
         where: {
-          createdAt: Between(new Date(fechaInicio), new Date(fechaFin + 'T23:59:59')),
+          createdAt: Between(fechaInicioDate, fechaFinDate),
         },
         relations: ['detalles'],
       });

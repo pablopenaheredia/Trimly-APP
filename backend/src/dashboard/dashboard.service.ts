@@ -190,26 +190,22 @@ export class DashboardService {
   async obtenerProximosTurnos() {
     const hoy = new Date();
     const hoyStr = hoy.toISOString().split('T')[0];
-    const horaActual = hoy.toTimeString().split(' ')[0].slice(0, 5);
 
-    // Calcular hora límite (1 hora antes)
-    const horaLimite = new Date(hoy);
-    horaLimite.setHours(horaLimite.getHours() - 1);
-    const horaLimiteStr = horaLimite.toTimeString().split(' ')[0].slice(0, 5);
-
-    const turnosHoy = await this.turnoRepository.find({
-      where: { fecha: hoyStr },
+    // Obtener todos los turnos pendientes de hoy y futuros
+    const turnosPendientes = await this.turnoRepository.find({
+      where: { 
+        estado: 'pendiente'
+      },
       relations: ['cliente', 'servicio'],
-      order: { hora: 'ASC' },
+      order: { 
+        fecha: 'ASC',
+        hora: 'ASC' 
+      },
     });
 
-    // Filtrar turnos no atendidos desde 1 hora antes
-    const proximosTurnos = turnosHoy
-      .filter((t) => {
-        const estadoValido = t.estado === 'pendiente';
-        const horaValida = t.hora >= horaLimiteStr;
-        return estadoValido && horaValida;
-      })
+    // Filtrar turnos de hoy en adelante
+    const proximosTurnos = turnosPendientes
+      .filter((t) => t.fecha >= hoyStr)
       .slice(0, 5); // Mostrar hasta 5 turnos
 
     return proximosTurnos.map((turno) => ({

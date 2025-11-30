@@ -199,7 +199,12 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
       );
 
       return {
-        ...(servicioCompleto || { id: reporteServicio.id, nombre: reporteServicio.nombre }),
+        id: reporteServicio.id,
+        nombre: reporteServicio.nombre,
+        servicio: servicioCompleto?.servicio || reporteServicio.nombre,
+        descripcion: servicioCompleto?.descripcion,
+        precio: servicioCompleto?.precio || 0,
+        duracion: servicioCompleto?.duracion,
         cantidad: reporteServicio.cantidad,
         ingresos: reporteServicio.ingresos,
       };
@@ -214,7 +219,12 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
       );
 
       return {
-        ...(productoCompleto || { id: reporteProducto.id, nombre: reporteProducto.nombre }),
+        id: reporteProducto.id,
+        nombre: reporteProducto.nombre,
+        categoria: productoCompleto?.categoria,
+        marca: productoCompleto?.marca,
+        precio: productoCompleto?.precio || 0,
+        stock: productoCompleto?.stock,
         cantidad: reporteProducto.cantidad,
         ingresos: reporteProducto.ingresos,
       };

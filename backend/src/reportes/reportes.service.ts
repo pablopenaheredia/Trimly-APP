@@ -146,13 +146,6 @@ async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
     query += ` GROUP BY p.id, p.nombre, p.precio, p.stock ORDER BY ingresos DESC`;
 
     const result = await this.productoRepository.query(query, params);
-    
-    console.log('=== DEBUG PRODUCTOS ===');
-    console.log('Número de productos encontrados:', result.length);
-    if (result.length > 0) {
-      console.log('Primer producto:', result[0]);
-    }
-    console.log('======================');
 
     return result.map((item: any) => ({
       id: Number(item.id),

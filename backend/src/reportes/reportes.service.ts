@@ -83,26 +83,45 @@ export class ReportesService {
 
   async obtenerEstadisticasServicios(fechaInicio?: string, fechaFin?: string) {
     try {
-      let query = `
-        SELECT
-          s.id,
-          s.servicio as nombre,
-          s.precio,
-          COALESCE(SUM(fd.cantidad), 0) as cantidad,
-          COALESCE(SUM(fd.subtotal), 0) as ingresos
-        FROM servicio s
-        INNER JOIN factura_detalle fd ON s.id = fd."itemId" AND fd.tipo_item = 'servicio'
-        INNER JOIN factura f ON fd."facturaId" = f.id
-      `;
-
-      const params: any[] = [];
+      let query: string;
+      let params: any[] = [];
 
       if (fechaInicio && fechaFin) {
-        query += ` WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2`;
-        params.push(fechaInicio, fechaFin);
+        // Con filtro de fechas: usar subquery para filtrar facturas por fecha
+        query = `
+          SELECT
+            s.id,
+            s.servicio as nombre,
+            s.precio,
+            COALESCE(SUM(fd.cantidad), 0) as cantidad,
+            COALESCE(SUM(fd.subtotal), 0) as ingresos
+          FROM servicio s
+          LEFT JOIN (
+            SELECT fd2.*
+            FROM factura_detalle fd2
+            INNER JOIN factura f ON fd2."facturaId" = f.id
+            WHERE fd2.tipo_item = 'servicio'
+              AND CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
+          ) fd ON s.id = fd."itemId"
+          GROUP BY s.id, s.servicio, s.precio
+          ORDER BY ingresos DESC
+        `;
+        params = [fechaInicio, fechaFin];
+      } else {
+        // Sin filtro de fechas: mostrar todos los servicios con sus totales históricos
+        query = `
+          SELECT
+            s.id,
+            s.servicio as nombre,
+            s.precio,
+            COALESCE(SUM(fd.cantidad), 0) as cantidad,
+            COALESCE(SUM(fd.subtotal), 0) as ingresos
+          FROM servicio s
+          LEFT JOIN factura_detalle fd ON s.id = fd."itemId" AND fd.tipo_item = 'servicio'
+          GROUP BY s.id, s.servicio, s.precio
+          ORDER BY ingresos DESC
+        `;
       }
-
-      query += ` GROUP BY s.id, s.servicio, s.precio ORDER BY ingresos DESC`;
 
       const result = await this.servicioRepository.query(query, params);
 
@@ -123,27 +142,47 @@ export class ReportesService {
 
 async obtenerEstadisticasProductos(fechaInicio?: string, fechaFin?: string) {
   try {
-    let query = `
-      SELECT
-        p.id,
-        p.nombre,
-        p.precio,
-        p.stock,
-        COALESCE(SUM(fd.cantidad), 0) as cantidad,
-        COALESCE(SUM(fd.subtotal), 0) as ingresos
-      FROM producto p
-      INNER JOIN factura_detalle fd ON p.id = fd."itemId" AND fd.tipo_item = 'producto'
-      INNER JOIN factura f ON fd."facturaId" = f.id
-    `;
-
-    const params: any[] = [];
+    let query: string;
+    let params: any[] = [];
 
     if (fechaInicio && fechaFin) {
-      query += ` WHERE CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2`;
-      params.push(fechaInicio, fechaFin);
+      // Con filtro de fechas: usar subquery para filtrar facturas por fecha
+      query = `
+        SELECT
+          p.id,
+          p.nombre,
+          p.precio,
+          p.stock,
+          COALESCE(SUM(fd.cantidad), 0) as cantidad,
+          COALESCE(SUM(fd.subtotal), 0) as ingresos
+        FROM producto p
+        LEFT JOIN (
+          SELECT fd2.*
+          FROM factura_detalle fd2
+          INNER JOIN factura f ON fd2."facturaId" = f.id
+          WHERE fd2.tipo_item = 'producto'
+            AND CAST(f."createdAt" AS DATE) BETWEEN $1 AND $2
+        ) fd ON p.id = fd."itemId"
+        GROUP BY p.id, p.nombre, p.precio, p.stock
+        ORDER BY ingresos DESC
+      `;
+      params = [fechaInicio, fechaFin];
+    } else {
+      // Sin filtro de fechas: mostrar todos los productos con sus totales históricos
+      query = `
+        SELECT
+          p.id,
+          p.nombre,
+          p.precio,
+          p.stock,
+          COALESCE(SUM(fd.cantidad), 0) as cantidad,
+          COALESCE(SUM(fd.subtotal), 0) as ingresos
+        FROM producto p
+        LEFT JOIN factura_detalle fd ON p.id = fd."itemId" AND fd.tipo_item = 'producto'
+        GROUP BY p.id, p.nombre, p.precio, p.stock
+        ORDER BY ingresos DESC
+      `;
     }
-
-    query += ` GROUP BY p.id, p.nombre, p.precio, p.stock ORDER BY ingresos DESC`;
 
     const result = await this.productoRepository.query(query, params);
 

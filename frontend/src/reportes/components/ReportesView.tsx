@@ -573,12 +573,12 @@ export const ReportesView = forwardRef<ReportesViewHandle>((_props, ref) => {
                     <p>
                       {searchProductos
                         ? "No se encontraron productos con ese criterio"
-                        : "No hay productos vendidos en este período"}
+                        : "No se pudieron cargar los productos"}
                     </p>
                     <p className="text-sm">
                       {searchProductos
                         ? "Intenta con otro término de búsqueda"
-                        : "Los productos vendidos aparecerán aquí cuando se facturen"}
+                        : "Verifica que el backend esté ejecutándose"}
                     </p>
                   </div>
                 )}

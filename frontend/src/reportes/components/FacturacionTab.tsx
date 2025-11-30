@@ -79,7 +79,7 @@ const FacturacionTab: React.FC = () => {
   const [clienteBloqueado, setClienteBloqueado] = useState(false);
   const [tipoMensaje, setTipoMensaje] = useState<string>("");
   const [metodoPago, setMetodoPago] = useState<string>("Efectivo");
-  const [notasTurnos, setNotasTurnos] = useState<{ [turnoId: number]: string }>({});
+  const [notasItems, setNotasItems] = useState<{ [key: string]: string }>({});
   const [precioEditando, setPrecioEditando] = useState<number | null>(null);
 
   const mostrarMensaje = (texto: string, tipo: string) => {
@@ -248,10 +248,10 @@ const FacturacionTab: React.FC = () => {
         items.filter((item) => item.productoId !== turno.id)
       );
 
-      // Limpiar la nota del turno
-      setNotasTurnos((prev) => {
+      // Limpiar la nota del item
+      setNotasItems((prev) => {
         const newNotas = { ...prev };
-        delete newNotas[turno.id];
+        delete newNotas[`${turno.id}-${nombreServicio}`];
         return newNotas;
       });
 
@@ -313,9 +313,9 @@ const FacturacionTab: React.FC = () => {
 
     // Cargar la nota existente del turno (si tiene)
     if (turno.notas) {
-      setNotasTurnos((prev) => ({
+      setNotasItems((prev) => ({
         ...prev,
-        [turno.id]: turno.notas || "",
+        [`${turno.id}-${nombreServicio}`]: turno.notas || "",
       }));
     }
 
@@ -445,19 +445,24 @@ const FacturacionTab: React.FC = () => {
   // Función para eliminar un producto/servicio de la factura
   const eliminarProducto = (productoId: number) => {
     setItemsFactura((items) => {
+      // Obtener el item antes de eliminarlo para limpiar su nota
+      const itemAEliminar = items.find((item) => item.productoId === productoId);
+      
+      if (itemAEliminar) {
+        // Limpiar la nota del item
+        setNotasItems((prev) => {
+          const newNotas = { ...prev };
+          delete newNotas[`${itemAEliminar.productoId}-${itemAEliminar.nombre}`];
+          return newNotas;
+        });
+      }
+      
       const nuevosItems = items.filter((item) => item.productoId !== productoId);
       
       // Verificar si el item eliminado era un turno
       const esTurno = turnosPendientes.some((t) => t.id === productoId);
       
       if (esTurno) {
-        // Limpiar la nota del turno si existe
-        setNotasTurnos((prev) => {
-          const newNotas = { ...prev };
-          delete newNotas[productoId];
-          return newNotas;
-        });
-        
         // Verificar si quedan más turnos en la factura
         const quedanTurnos = nuevosItems.some((item) =>
           turnosPendientes.some((t) => t.id === item.productoId)
@@ -599,7 +604,7 @@ const FacturacionTab: React.FC = () => {
             precioUnitario: Number(item.precioUnitario),
             subtotal: Number(item.cantidad) * Number(item.precioUnitario),
             turnoId: turno?.id ? Number(turno.id) : undefined,
-            nota: item.turnoId ? notasTurnos[item.turnoId] : undefined, // Incluir nota
+            nota: notasItems[`${item.productoId}-${item.nombre}`] || undefined, // Incluir nota
           };
         } else if (servicios.some((s) => s.id === item.productoId)) {
           // Es un servicio agregado directamente
@@ -667,7 +672,7 @@ const FacturacionTab: React.FC = () => {
       setBusquedaCliente("");
       setMostrarDropdownClientes(false);
       setClienteBloqueado(false); // ✅ IMPORTANTE: Desbloquear cliente
-      setNotasTurnos({}); // Limpiar notas de los turnos
+      setNotasItems({}); // Limpiar notas de los items
       
       // ✅ Recargar turnos pendientes para refrescar la vista
       try {
@@ -1107,22 +1112,18 @@ const FacturacionTab: React.FC = () => {
                       <strong>${formatearPrecio(item.cantidad * item.precioUnitario)}</strong>
                     </td>
                     <td data-label="Nota">
-                      {item.turnoId ? (
-                        <input
-                          type="text"
-                          value={notasTurnos[item.turnoId] || ""}
-                          onChange={(e) =>
-                            setNotasTurnos((prev) => ({
-                              ...prev,
-                              [item.turnoId!]: e.target.value,
-                            }))
-                          }
-                          className="nota-input"
-                          placeholder="Nota del servicio..."
-                        />
-                      ) : (
-                        <span className="sin-nota">-</span>
-                      )}
+                      <input
+                        type="text"
+                        value={notasItems[`${item.productoId}-${item.nombre}`] || ""}
+                        onChange={(e) =>
+                          setNotasItems((prev) => ({
+                            ...prev,
+                            [`${item.productoId}-${item.nombre}`]: e.target.value,
+                          }))
+                        }
+                        className="nota-input"
+                        placeholder="Nota..."
+                      />
                     </td>
                     <td data-label="Eliminar">
                       <button onClick={() => eliminarProducto(item.productoId)}>

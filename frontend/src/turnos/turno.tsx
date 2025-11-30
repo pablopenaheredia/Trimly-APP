@@ -391,7 +391,15 @@ export default function Turnos() {
           </div>
           <div className="turnos-semana-list-section">
             {diasSemana.map((dia, idx) => (
-              <div className="turnos-semana-dia-card" key={dia.toISOString()}>
+              <div 
+                className="turnos-semana-dia-card" 
+                key={dia.toISOString()}
+                onClick={() => {
+                  setSelectedDate(dia);
+                  setActiveTab("dia");
+                }}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="turnos-semana-dia-label">
                   {diasCorto[dia.getDay()]}
                 </div>

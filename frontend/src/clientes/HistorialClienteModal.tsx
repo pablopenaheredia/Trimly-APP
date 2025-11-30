@@ -165,10 +165,11 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
 
   // Combinar turnos y facturas en un historial unificado
   const historialCombinado: ServicioHistorial[] = [
-    // Incluir TODOS los turnos
-    ...turnos.map((turno) => {
-      // Si el turno está cobrado, buscar su factura para mostrar el monto real
-      if (turno.estado === 'cobrado') {
+    // Incluir SOLO los turnos cobrados (facturados)
+    ...turnos
+      .filter((turno) => turno.estado === 'cobrado')
+      .map((turno) => {
+        // Buscar la factura del turno para mostrar el monto real y productos
         const facturaDelTurno = facturas.find((f) => 
           f.detalles.some((d) => d.turnoId === turno.id)
         );
@@ -185,9 +186,9 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
             .map((p) => {
               const producto = productos.find((prod) => prod.id === p.itemId);
               if (producto) {
-                return `${producto.nombre} (ID: #${producto.id})`;
+                return `${producto.nombre} (x${p.cantidad})`;
               }
-              return `Producto #${p.itemId}`;
+              return `Producto #${p.itemId} (x${p.cantidad})`;
             });
           
           return {
@@ -201,21 +202,18 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
             monto: montoTotal,
           };
         }
-      }
-      
-      // Para turnos pendientes o cancelados
-      return {
-        fecha: formatearFecha(turno.fecha),
-        servicio: turno.servicio?.servicio || "Servicio no disponible",
-        profesional: turno.usuario
-          ? `${turno.usuario.nombre} ${turno.usuario.apellido}`
-          : "No asignado",
-        productos: [],
-        nota: turno.estado === 'cancelado' 
-          ? `CANCELADO - ${turno.notas || "Sin notas"}` 
-          : turno.notas || "Sin notas",
-        monto: turno.estado === 'cancelado' ? 0 : formatearPrecio(turno.servicio?.precio),
-      };
+        
+        // Si no hay factura pero está marcado como cobrado, usar datos del turno
+        return {
+          fecha: formatearFecha(turno.fecha),
+          servicio: turno.servicio?.servicio || "Servicio no disponible",
+          profesional: turno.usuario
+            ? `${turno.usuario.nombre} ${turno.usuario.apellido}`
+            : "No asignado",
+          productos: [],
+          nota: turno.notas || "Sin notas",
+          monto: formatearPrecio(turno.servicio?.precio),
+        };
     }),
   ];
 

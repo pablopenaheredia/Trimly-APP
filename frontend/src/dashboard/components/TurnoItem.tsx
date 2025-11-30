@@ -32,7 +32,7 @@ const TurnoItem: React.FC<TurnoItemProps> = ({ cliente, servicio, hora, estado }
         <div className="turno-item-details">
           <span className="turno-item-servicio">{servicio}</span>
           <span className="turno-item-separator">•</span>
-          <span className="turno-item-hora">{hora}</span>
+          <span className="turno-item-hora">{hora.slice(0, 5)}</span>
         </div>
       </div>
       <Badge variant={getEstadoVariant()}>{getEstadoText()}</Badge>

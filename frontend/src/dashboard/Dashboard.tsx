@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
         {/* Próximos Turnos */}
         <div className="dashboard-section dashboard-turnos-section">
           <div className="dashboard-section-header">
-            <h2 className="dashboard-section-title">Próximos Turnos</h2>
+            <h2 className="dashboard-section-title">Próximos Turnos del Día</h2>
             <button
               className="dashboard-section-action"
               onClick={() => navigate('/turnos')}

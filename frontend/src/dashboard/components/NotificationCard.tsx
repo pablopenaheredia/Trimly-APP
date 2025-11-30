@@ -32,8 +32,8 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
 
-  const visibleItems = showAll ? items : items.slice(0, 4);
-  const hasMore = items.length > 4;
+  const visibleItems = showAll ? items : items.slice(0, 5);
+  const hasMore = items.length > 5;
 
   return (
     <div className={`notification-card notification-card-${variant}`}>
@@ -81,7 +81,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
             className="notification-card-show-more"
             onClick={() => setShowAll(true)}
           >
-            +{items.length - 4} {type === 'stock' ? 'productos' : 'servicios'} más...
+            +{items.length - 5} {type === 'stock' ? 'productos' : 'servicios'} más...
           </button>
         )}
       </div>

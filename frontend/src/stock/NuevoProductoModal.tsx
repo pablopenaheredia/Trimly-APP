@@ -165,23 +165,6 @@ export default function NuevoProductoModal({ show, onClose, onProductoCreado }: 
                   No tienes permisos para establecer stock inicial (se asignará 0)
                 </small>
               )}
-              {form.estado && (
-                <small
-                  style={{
-                    marginTop: "4px",
-                    display: "block",
-                    fontWeight: "bold",
-                    color:
-                      form.estado === "Alto"
-                        ? "green"
-                        : form.estado === "Medio"
-                        ? "orange"
-                        : "red",
-                  }}
-                >
-                  Estado: {form.estado}
-                </small>
-              )}
             </div>
           </div>
 

@@ -104,19 +104,6 @@ export default function ProductosDashboard() {
     {
       key: "stock",
       label: "Stock",
-      render: (value) => (
-        <span
-          className={`estado-badge ${
-            value > 30
-              ? "estado-alto"
-              : value > 10
-              ? "estado-medio"
-              : "estado-bajo"
-          }`}
-        >
-          {value}
-        </span>
-      ),
     },
     {
       key: "estado",

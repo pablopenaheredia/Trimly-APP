@@ -186,23 +186,6 @@ export default function EditarProductoModal({ show, onClose, producto, onProduct
                   No tienes permisos para modificar el stock
                 </small>
               )}
-              {form.estado && (
-                <small
-                  style={{
-                    marginTop: "4px",
-                    display: "block",
-                    fontWeight: "bold",
-                    color:
-                      form.estado === "Alto"
-                        ? "green"
-                        : form.estado === "Medio"
-                        ? "orange"
-                        : "red",
-                  }}
-                >
-                  Estado: {form.estado}
-                </small>
-              )}
             </div>
           </div>
           {/* Categoría */}

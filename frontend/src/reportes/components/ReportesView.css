@@ -244,6 +244,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  text-align: left;
 }
 
 .item-name {
@@ -251,12 +252,14 @@
   color: #fff;
   margin: 0;
   font-size: 1rem;
+  text-align: left;
 }
 
 .item-subtitle {
   font-size: 0.875rem;
   color: #a1a1aa;
   margin: 0;
+  text-align: left;
 }
 
 .item-right {

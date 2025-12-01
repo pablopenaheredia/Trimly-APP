@@ -48,6 +48,7 @@
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 2px;
+  color: #f87171;
 }
 
 .editar-turno-subtitle {
@@ -115,39 +116,38 @@
 
 .editar-turno-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;
 }
 
 .editar-turno-cancel-btn,
 .editar-turno-save-btn {
-  flex: 1;
   border: none;
   border-radius: 12px;
-  padding: 14px 22px;
+  padding: 10px 22px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
-  font-weight: 600;
 }
 
 .editar-turno-cancel-btn {
-  background: #3f3f46;
+  background: #232329;
   color: #fff;
 }
 
 .editar-turno-cancel-btn:hover {
-  background: #52525b;
+  background: #18181b;
 }
 
 .editar-turno-save-btn {
-  background: linear-gradient(135deg, #00e6e6 0%, #00b3b3 100%);
-  color: #18181b;
+  background: linear-gradient(135deg, #00e6f6 0%, #a259ff 100%);
+  color: #fff;
   font-weight: bold;
 }
 
 .editar-turno-save-btn:hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .editar-turno-save-btn:disabled {

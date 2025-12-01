@@ -6,27 +6,26 @@
   bottom: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-  padding: 20px; /* ✅ Padding para que no toque los bordes */
+  z-index: 2000;
+  padding: 20px;
 }
 
 .editar-turno-modal-content {
-  background: #1a1a1a;
+  background: #27272a;
   color: #fff;
-  padding: 20px; /* ✅ Reducir padding de 30px a 20px */
-  border-radius: 16px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 85vh; /* ✅ Reducir de altura automática a máximo 85% del viewport */
-  overflow-y: auto; /* ✅ Scroll si el contenido es muy largo */
-  border: 1px solid #323238;
+  padding: 32px 28px;
+  border-radius: 32px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
   position: relative;
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 }
 
 .editar-turno-close-btn {
@@ -68,7 +67,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 15px; /* ✅ Reducir de 20px a 15px */
+  margin-bottom: 15px;
 }
 
 .editar-turno-form-group label {
@@ -96,7 +95,7 @@
 
 .editar-turno-form-group textarea {
   resize: vertical;
-  min-height: 60px; /* ✅ Reducir altura mínima */
+  min-height: 60px;
 }
 
 .editar-turno-form-group input:focus,
@@ -116,38 +115,44 @@
 
 .editar-turno-actions {
   display: flex;
-  justify-content: flex-end;
   gap: 12px;
-  margin-top: 20px; /* ✅ Reducir de 30px a 20px */
+  margin-top: 20px;
 }
 
 .editar-turno-cancel-btn,
 .editar-turno-save-btn {
+  flex: 1;
   border: none;
   border-radius: 12px;
-  padding: 10px 22px;
+  padding: 14px 22px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
+  font-weight: 600;
 }
 
 .editar-turno-cancel-btn {
-  background: #232329;
+  background: #3f3f46;
   color: #fff;
 }
 
 .editar-turno-cancel-btn:hover {
-  background: #18181b;
+  background: #52525b;
 }
 
 .editar-turno-save-btn {
-  background: linear-gradient(135deg, #00e6f6 0%, #a259ff 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #00e6e6 0%, #00b3b3 100%);
+  color: #18181b;
   font-weight: bold;
 }
 
 .editar-turno-save-btn:hover {
-  opacity: 0.85;
+  opacity: 0.9;
+}
+
+.editar-turno-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Estilos para el scroll del dropdown de tiempo en el modal de editar */
@@ -396,16 +401,26 @@
 /* Solo en pantallas muy pequeñas, usar más espacio */
 @media (max-height: 600px) {
   .editar-turno-modal-content {
-    max-height: 95vh; /* ✅ Usar más espacio en pantallas bajas */
-  }
-
-  .editar-turno-modal-content form {
-    padding: 15px;
-    padding-top: 50px;
+    max-height: 95vh;
+    padding: 24px 20px;
+    border-radius: 24px;
   }
 
   .editar-turno-form-group {
     margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .editar-turno-modal-content {
+    padding: 24px 20px;
+    border-radius: 24px;
+    margin: 10px;
+  }
+  
+  .editar-turno-form-row {
+    flex-direction: column;
+    gap: 0;
   }
 }
 
@@ -607,12 +622,7 @@
 
 /* Ajustes específicos para la búsqueda de servicios en el modal */
 .editar-turno-form-group {
-  margin-bottom: 15px; /* ✅ Asegurar consistencia con el resto del formulario */
-}
-
-.editar-turno-modal-content {
-  padding: 20px;
-  max-height: 85vh;
+  margin-bottom: 15px;
 }
 
 /* Responsivo para la búsqueda de servicios */

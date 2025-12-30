@@ -15,8 +15,15 @@ export class AuthService {
     private readonly usuariosRepository: Repository<Usuario>,
     private readonly jwtService: JwtService,
   ) {
+    // En producción, JWT_SECRET debería existir SIEMPRE.
+    // Pero si el deploy en Vercel quedó sin env vars, tirar error acá rompe toda la app (500 global).
+    // Para "break-glass" temporal, permitimos arrancar con el secreto por defecto del JwtModule.
+    // IMPORTANTE: en cuanto tengan acceso, setear JWT_SECRET y redeploy.
     if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET must be set in production');
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[Auth] JWT_SECRET is missing in production. Using fallback secret. Set JWT_SECRET ASAP.',
+      );
     }
   }
 

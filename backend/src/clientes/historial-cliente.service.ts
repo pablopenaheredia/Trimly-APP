@@ -20,7 +20,7 @@ export class HistorialClienteService {
   async obtenerTurnosCliente(clienteId: number) {
     return this.turnoRepo.find({
       where: { clienteId },
-      relations: ['cliente', 'servicio', 'usuario'],
+      relations: ['cliente', 'servicio', 'usuario', 'productos'],
       order: { fecha: 'DESC' },
     });
   }

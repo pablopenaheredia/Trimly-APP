@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaPhoneAlt, FaEnvelope, FaCalendarAlt } from "react-icons/fa";
 import "./EditarClienteModal.css";
 import { API_URL } from "../config/api";
+import { normalizeHumanName } from "../utils/nameFormat";
 
 interface Cliente {
   id: number;
@@ -91,11 +92,8 @@ export default function EditarClienteModal({
     const { name, value, type, checked } = target;
     let newValue: string | boolean | undefined = value;
 
-    // Convertir a minúsculas para email y otros campos de texto si es necesario
-    if (
-      name === "email" ||
-      (type === "text" && name !== "dni" && name !== "telefono")
-    ) {
+    // Email siempre en minúsculas. Nombre/Apellido NO: los normalizamos al final (blur/submit).
+    if (name === "email") {
       newValue = value.toLowerCase();
     }
 
@@ -276,7 +274,13 @@ export default function EditarClienteModal({
     }
 
     // Construcción del objeto de datos para el body (excluyendo 'id')
-    const { id, ...dataToSend } = form;
+    const { id, ...rest } = form;
+    const dataToSend = {
+      ...rest,
+      nombre: normalizeHumanName(String(rest.nombre || '')),
+      apellido: normalizeHumanName(String(rest.apellido || '')),
+      email: String(rest.email || '').toLowerCase(),
+    };
 
     try {
       const res = await fetch(url, {
@@ -344,6 +348,12 @@ export default function EditarClienteModal({
                 placeholder="Ej: María"
                 value={form.nombre || ""}
                 onChange={handleChange}
+                onBlur={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    nombre: normalizeHumanName(String(prev.nombre || "")),
+                  }))
+                }
                 required
               />
               {errors.nombre && (
@@ -357,6 +367,12 @@ export default function EditarClienteModal({
                 placeholder="Ej: García"
                 value={form.apellido || ""}
                 onChange={handleChange}
+                onBlur={() =>
+                  setForm((prev) => ({
+                    ...prev,
+                    apellido: normalizeHumanName(String(prev.apellido || "")),
+                  }))
+                }
                 required
               />
               {errors.apellido && (

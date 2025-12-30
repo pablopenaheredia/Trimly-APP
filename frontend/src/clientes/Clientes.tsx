@@ -18,6 +18,7 @@ import {
 import { FaEdit, FaTrash, FaFileInvoice } from "react-icons/fa";
 import { usePermissions } from "../hooks/usePermissions";
 import { API_URL } from "../config/api";
+import { formatFullName } from "../utils/nameFormat";
 
 interface Cliente {
   id: number;
@@ -198,7 +199,7 @@ export default function Clientes() {
       key: "nombre",
       label: "Cliente",
       icon: <FaUserCircle color="#a259ff" />,
-      render: (_, row) => `${row.nombre} ${row.apellido}`,
+      render: (_, row) => formatFullName(row.nombre, row.apellido),
     },
     {
       key: "telefono",

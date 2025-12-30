@@ -7,6 +7,8 @@ import { Cliente } from '../clientes/cliente.entity';
 import { Servicio } from '../servicios/servicio.entity';
 import { UpdateTurnoDto } from '../dto/update-turno.dto';
 import { Usuario } from '../usuarios/usuario.entity'; // Importa la entidad Usuario
+import { Producto } from '../producto/producto.entity';
+import { In } from 'typeorm';
 
 @Injectable()
 export class TurnosService {
@@ -22,6 +24,9 @@ export class TurnosService {
 
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>, // Inyecta el repositorio de Usuario
+
+    @InjectRepository(Producto)
+    private readonly productoRepository: Repository<Producto>,
   ) {}
 
   async create(createTurnoDto: CreateTurnoDto): Promise<Turno> {
@@ -34,6 +39,25 @@ export class TurnosService {
 
     if (!cliente || !servicio) {
       throw new NotFoundException('Cliente o servicio no encontrado');
+    }
+
+    // Validar productos (opcional)
+    if (createTurnoDto.productos?.length) {
+      const ids = Array.from(
+        new Set(createTurnoDto.productos.map((p) => Number(p.productoId))),
+      ).filter((id) => Number.isFinite(id));
+
+      const encontrados = await this.productoRepository.find({
+        where: { id: In(ids) },
+      });
+
+      const encontradosSet = new Set(encontrados.map((p) => p.id));
+      const faltantes = ids.filter((id) => !encontradosSet.has(id));
+      if (faltantes.length) {
+        throw new NotFoundException(
+          `Producto(s) no encontrado(s): ${faltantes.join(', ')}`,
+        );
+      }
     }
 
     // Usuario ahora es opcional
@@ -52,6 +76,11 @@ export class TurnosService {
       fecha: createTurnoDto.fecha,
       hora: createTurnoDto.hora,
       notas: createTurnoDto.notas, // Change this from notasAdicionales to notas
+      productos: createTurnoDto.productos?.map((p) => ({
+        productoId: Number(p.productoId),
+        cantidad: Number(p.cantidad),
+        precioUnitario: Number(p.precioUnitario),
+      })),
     });
 
     return await this.turnoRepository.save(turno);

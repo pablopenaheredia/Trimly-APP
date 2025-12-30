@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaPhoneAlt, FaEnvelope, FaCalendarAlt } from "react-icons/fa"; // Ya no necesitamos FaCheckCircle
 import "./NuevoClienteModal.css"; // Asegúrate de que este archivo CSS existe
 import { API_URL } from "../config/api";
+import { normalizeHumanName } from "../utils/nameFormat";
 
 // Interfaz para el formulario (lo que enviamos al backend para crear un cliente)
 interface NuevoClienteFormData {
@@ -86,10 +87,8 @@ export default function NuevoClienteModal({
     const { name, value, type, checked } = target;
     let newValue: string | boolean = value;
 
-    if (
-      name === "email" ||
-      (type === "text" && name !== "dni" && name !== "telefono")
-    ) {
+    // Email siempre en minúsculas. Nombre/Apellido NO: los normalizamos al final (blur/submit).
+    if (name === "email") {
       newValue = value.toLowerCase();
     }
 
@@ -283,10 +282,17 @@ export default function NuevoClienteModal({
       "9. Todas las validaciones de frontend y duplicados pasaron. Enviando al backend..."
     );
     try {
+      const payload: NuevoClienteFormData = {
+        ...form,
+        nombre: normalizeHumanName(form.nombre),
+        apellido: normalizeHumanName(form.apellido),
+        email: (form.email || "").toLowerCase(),
+      };
+
       const res = await fetch(`${API_URL}/clientes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       console.log(
         "10. Respuesta del servidor recibida. Status:",
@@ -353,6 +359,12 @@ export default function NuevoClienteModal({
                   placeholder="Ej: María"
                   value={form.nombre}
                   onChange={handleChange}
+                  onBlur={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      nombre: normalizeHumanName(prev.nombre),
+                    }))
+                  }
                   required
                 />
                 {errors.nombre && (
@@ -366,6 +378,12 @@ export default function NuevoClienteModal({
                   placeholder="Ej: García"
                   value={form.apellido}
                   onChange={handleChange}
+                  onBlur={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      apellido: normalizeHumanName(prev.apellido),
+                    }))
+                  }
                   required
                 />
                 {errors.apellido && (

@@ -8,9 +8,11 @@ import {
   FaEnvelope,
   FaCut,
   FaBox,
+  FaPlus,
   FaArrowUp,
   FaArrowDown,
 } from "react-icons/fa";
+import { formatFullName } from "../utils/nameFormat";
 import "./HistorialClienteModal.css";
 import { API_URL } from "../config/api";
 
@@ -41,6 +43,17 @@ interface TurnoHistorial {
     nombre: string;
     apellido: string;
   };
+  productos?: Array<{
+    id: number;
+    productoId: number;
+    cantidad: number;
+    precioUnitario: number;
+    producto?: {
+      id: number;
+      nombre: string;
+      precio: number;
+    };
+  }>;
   notas?: string;
   estado: string;
 }
@@ -79,6 +92,20 @@ interface Props {
   cliente: Cliente | null;
 }
 
+type UsuarioOption = {
+  id: number;
+  nombre: string;
+  apellido: string;
+  activo?: boolean;
+  rol?: "admin" | "empleado";
+};
+
+type ProductoOption = {
+  id: number;
+  nombre: string;
+  precio: number;
+};
+
 const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
   const [activeTab, setActiveTab] = useState<"servicios" | "datos">(
     "servicios"
@@ -90,11 +117,53 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
   const [loading, setLoading] = useState(false);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
+  const [showAddTurno, setShowAddTurno] = useState(false);
+  const [usuariosOptions, setUsuariosOptions] = useState<UsuarioOption[]>([]);
+  const [addTurnoLoading, setAddTurnoLoading] = useState(false);
+  const [addTurnoError, setAddTurnoError] = useState<string>("");
+  const [nuevoTurnoFecha, setNuevoTurnoFecha] = useState<string>("");
+  const [nuevoTurnoHora, setNuevoTurnoHora] = useState<string>("");
+  const [nuevoTurnoServicioId, setNuevoTurnoServicioId] = useState<string>("");
+  const [nuevoTurnoUsuarioId, setNuevoTurnoUsuarioId] = useState<string>("");
+  const [nuevoTurnoNotas, setNuevoTurnoNotas] = useState<string>("");
+  const [nuevoTurnoProductoId, setNuevoTurnoProductoId] = useState<string>("");
+  const [nuevoTurnoProductoCantidad, setNuevoTurnoProductoCantidad] = useState<string>("1");
+  const [nuevoTurnoProductos, setNuevoTurnoProductos] = useState<
+    Array<{ productoId: number; cantidad: number; precioUnitario: number; nombre: string }>
+  >([]);
+
   useEffect(() => {
     if (show && cliente) {
       cargarHistorial();
     }
   }, [show, cliente]);
+
+  useEffect(() => {
+    if (!showAddTurno) return;
+    // Defaults
+    if (!nuevoTurnoFecha) {
+      setNuevoTurnoFecha(new Date().toISOString().slice(0, 10));
+    }
+    if (!nuevoTurnoHora) {
+      setNuevoTurnoHora("09:00");
+    }
+
+    // Cargar usuarios para poder asignar profesional (opcional)
+    const cargarUsuarios = async () => {
+      try {
+        const res = await fetch(`${API_URL}/usuarios`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data)) setUsuariosOptions(data);
+      } catch {
+        // ignore
+      }
+    };
+
+    if (usuariosOptions.length === 0) {
+      cargarUsuarios();
+    }
+  }, [showAddTurno, nuevoTurnoFecha, nuevoTurnoHora, usuariosOptions.length]);
 
   const cargarHistorial = async () => {
     if (!cliente) return;
@@ -209,13 +278,21 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
         }
         
         // Si no hay factura pero está marcado como cobrado, usar datos del turno
+        const productosDelTurno = (turno.productos || []).map((p) => {
+          const nombre =
+            p?.producto?.nombre ||
+            productos.find((prod) => prod.id === p.productoId)?.nombre ||
+            `Producto #${p.productoId}`;
+          return `${nombre} (x${p.cantidad})`;
+        });
+
         return {
           fecha: formatearFecha(turno.fecha),
           servicio: turno.servicio?.servicio || "Servicio no disponible",
           profesional: turno.usuario
             ? `${turno.usuario.nombre} ${turno.usuario.apellido}`
             : "No asignado",
-          productos: [],
+          productos: productosDelTurno,
           nota: turno.notas || "Sin notas",
           monto: formatearPrecio(turno.servicio?.precio),
         };
@@ -235,6 +312,154 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
+  const abrirAgregarTurnoPasado = () => {
+    setAddTurnoError("");
+    setNuevoTurnoServicioId("");
+    setNuevoTurnoUsuarioId("");
+    setNuevoTurnoNotas("");
+    setNuevoTurnoProductoId("");
+    setNuevoTurnoProductoCantidad("1");
+    setNuevoTurnoProductos([]);
+    setShowAddTurno(true);
+  };
+
+  const cerrarAgregarTurnoPasado = () => {
+    if (addTurnoLoading) return;
+    setShowAddTurno(false);
+    setAddTurnoError("");
+  };
+
+  const agregarProductoATurno = () => {
+    setAddTurnoError("");
+
+    if (!nuevoTurnoProductoId) return;
+
+    const cantidadNum = Number(nuevoTurnoProductoCantidad || "1");
+    if (!Number.isFinite(cantidadNum) || cantidadNum <= 0) {
+      setAddTurnoError("Ingresá una cantidad válida");
+      return;
+    }
+
+    const producto = (productos as ProductoOption[]).find(
+      (p) => String(p.id) === String(nuevoTurnoProductoId)
+    );
+    if (!producto) {
+      setAddTurnoError("Producto no encontrado");
+      return;
+    }
+
+    const precioUnitario = Number(producto.precio);
+
+    setNuevoTurnoProductos((prev) => {
+      const idx = prev.findIndex((p) => p.productoId === producto.id);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = {
+          ...copy[idx],
+          cantidad: copy[idx].cantidad + cantidadNum,
+        };
+        return copy;
+      }
+      return [
+        ...prev,
+        {
+          productoId: producto.id,
+          cantidad: cantidadNum,
+          precioUnitario,
+          nombre: producto.nombre,
+        },
+      ];
+    });
+
+    setNuevoTurnoProductoId("");
+    setNuevoTurnoProductoCantidad("1");
+  };
+
+  const quitarProductoDeTurno = (productoId: number) => {
+    setNuevoTurnoProductos((prev) => prev.filter((p) => p.productoId !== productoId));
+  };
+
+  const guardarTurnoPasado = async () => {
+    if (!cliente) return;
+
+    setAddTurnoError("");
+
+    if (!nuevoTurnoServicioId) {
+      setAddTurnoError("Seleccioná un servicio");
+      return;
+    }
+    if (!nuevoTurnoFecha) {
+      setAddTurnoError("Seleccioná una fecha");
+      return;
+    }
+    if (!nuevoTurnoHora) {
+      setAddTurnoError("Seleccioná una hora");
+      return;
+    }
+
+    setAddTurnoLoading(true);
+    try {
+      const createRes = await fetch(`${API_URL}/turnos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          clienteId: cliente.id,
+          servicioId: Number(nuevoTurnoServicioId),
+          usuarioId: nuevoTurnoUsuarioId ? Number(nuevoTurnoUsuarioId) : undefined,
+          fecha: nuevoTurnoFecha,
+          hora: nuevoTurnoHora,
+          notas: nuevoTurnoNotas || undefined,
+          productos:
+            nuevoTurnoProductos.length > 0
+              ? nuevoTurnoProductos.map((p) => ({
+                  productoId: p.productoId,
+                  cantidad: p.cantidad,
+                  precioUnitario: p.precioUnitario,
+                }))
+              : undefined,
+        }),
+      });
+
+      if (!createRes.ok) {
+        let message = "No se pudo crear el turno";
+        try {
+          const body = await createRes.json();
+          if (typeof body?.message === "string") message = body.message;
+          if (Array.isArray(body?.message)) message = body.message.join(", ");
+        } catch {
+          // ignore
+          // ignore
+        }
+        throw new Error(message);
+      }
+
+      const turnoCreado = await createRes.json();
+
+      // Como es un turno ya realizado, lo marcamos como cobrado para que aparezca en el historial.
+      const patchRes = await fetch(`${API_URL}/turnos/${turnoCreado.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ estado: "cobrado" }),
+      });
+
+      if (!patchRes.ok) {
+        // Si falla el cambio de estado, al menos queda creado.
+        console.warn("No se pudo marcar como cobrado el turno creado");
+      }
+
+      await cargarHistorial();
+      setShowAddTurno(false);
+    } catch (e: any) {
+      setAddTurnoError(e?.message || "Error al guardar el turno");
+    } finally {
+      setAddTurnoLoading(false);
+    }
+  };
+
   if (!show || !cliente) return null;
 
   return (
@@ -247,7 +472,7 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
             </div>
             <div>
               <h2 className="cliente-nombre">
-                {cliente.nombre} {cliente.apellido}
+                {formatFullName(cliente.nombre, cliente.apellido)}
               </h2>
               <div className="cliente-contacto">
                 <span>
@@ -296,19 +521,189 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
                 <>
                   <div className="servicios-header">
                     <h3 className="servicios-title">Historial de servicios</h3>
-                    <button
-                      className="sort-btn-v0"
-                      onClick={toggleSortDirection}
-                    >
-                      <FaSort />
-                      Ordenar{" "}
-                      {sortDirection === "asc" ? (
-                        <FaArrowUp />
-                      ) : (
-                        <FaArrowDown />
-                      )}
-                    </button>
+                    <div className="servicios-actions">
+                      <button
+                        className="sort-btn-v0"
+                        onClick={abrirAgregarTurnoPasado}
+                      >
+                        <FaPlus />
+                        Agregar turno pasado
+                      </button>
+                      <button
+                        className="sort-btn-v0"
+                        onClick={toggleSortDirection}
+                      >
+                        <FaSort />
+                        Ordenar{" "}
+                        {sortDirection === "asc" ? (
+                          <FaArrowUp />
+                        ) : (
+                          <FaArrowDown />
+                        )}
+                      </button>
+                    </div>
                   </div>
+
+                  {showAddTurno && (
+                    <div className="agregar-turno-panel">
+                      <div className="agregar-turno-title">
+                        Cargar turno ya realizado
+                      </div>
+
+                      {addTurnoError && (
+                        <div className="agregar-turno-error">{addTurnoError}</div>
+                      )}
+
+                      <div className="agregar-turno-grid">
+                        <div className="agregar-turno-field">
+                          <label>Fecha</label>
+                          <input
+                            type="date"
+                            value={nuevoTurnoFecha}
+                            onChange={(e) => setNuevoTurnoFecha(e.target.value)}
+                            disabled={addTurnoLoading}
+                          />
+                        </div>
+
+                        <div className="agregar-turno-field">
+                          <label>Hora</label>
+                          <input
+                            type="time"
+                            value={nuevoTurnoHora}
+                            onChange={(e) => setNuevoTurnoHora(e.target.value)}
+                            disabled={addTurnoLoading}
+                          />
+                        </div>
+
+                        <div className="agregar-turno-field">
+                          <label>Servicio</label>
+                          <select
+                            value={nuevoTurnoServicioId}
+                            onChange={(e) => setNuevoTurnoServicioId(e.target.value)}
+                            disabled={addTurnoLoading}
+                          >
+                            <option value="">Seleccionar servicio</option>
+                            {servicios.map((s) => (
+                              <option key={s.id} value={String(s.id)}>
+                                {s.servicio} (${Number(s.precio || 0).toLocaleString()})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="agregar-turno-field">
+                          <label>Profesional (opcional)</label>
+                          <select
+                            value={nuevoTurnoUsuarioId}
+                            onChange={(e) => setNuevoTurnoUsuarioId(e.target.value)}
+                            disabled={addTurnoLoading}
+                          >
+                            <option value="">Sin asignar</option>
+                            {usuariosOptions
+                              .filter((u) => u.activo !== false)
+                              .map((u) => (
+                                <option key={u.id} value={String(u.id)}>
+                                  {u.nombre} {u.apellido}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+
+                        <div className="agregar-turno-field agregar-turno-notas">
+                          <label>Notas (opcional)</label>
+                          <textarea
+                            value={nuevoTurnoNotas}
+                            onChange={(e) => setNuevoTurnoNotas(e.target.value)}
+                            disabled={addTurnoLoading}
+                            placeholder="Ej: vino con la grilla previa / detalle del servicio"
+                          />
+                        </div>
+
+                        <div className="agregar-turno-field agregar-turno-productos">
+                          <label>Productos (opcional)</label>
+
+                          <div className="agregar-turno-productos-row">
+                            <select
+                              value={nuevoTurnoProductoId}
+                              onChange={(e) => setNuevoTurnoProductoId(e.target.value)}
+                              disabled={addTurnoLoading}
+                            >
+                              <option value="">Seleccionar producto</option>
+                              {(productos as ProductoOption[])
+                                .slice()
+                                .sort((a, b) => String(a.nombre).localeCompare(String(b.nombre)))
+                                .map((p) => (
+                                  <option key={p.id} value={String(p.id)}>
+                                    {p.nombre} (${Number(p.precio || 0).toLocaleString()})
+                                  </option>
+                                ))}
+                            </select>
+
+                            <input
+                              type="number"
+                              min={1}
+                              step={1}
+                              value={nuevoTurnoProductoCantidad}
+                              onChange={(e) => setNuevoTurnoProductoCantidad(e.target.value)}
+                              disabled={addTurnoLoading}
+                              placeholder="Cant."
+                            />
+
+                            <button
+                              type="button"
+                              className="sort-btn-v0"
+                              onClick={agregarProductoATurno}
+                              disabled={addTurnoLoading || !nuevoTurnoProductoId}
+                            >
+                              Agregar
+                            </button>
+                          </div>
+
+                          {nuevoTurnoProductos.length > 0 && (
+                            <div className="agregar-turno-productos-list">
+                              {nuevoTurnoProductos.map((p) => (
+                                <div
+                                  key={p.productoId}
+                                  className="agregar-turno-producto-item"
+                                >
+                                  <span>
+                                    {p.nombre} (x{p.cantidad})
+                                  </span>
+                                  <button
+                                    type="button"
+                                    className="agregar-turno-producto-remove"
+                                    onClick={() => quitarProductoDeTurno(p.productoId)}
+                                    disabled={addTurnoLoading}
+                                    aria-label="Quitar producto"
+                                    title="Quitar"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="agregar-turno-actions">
+                        <button
+                          className="sort-btn-v0"
+                          onClick={cerrarAgregarTurnoPasado}
+                          disabled={addTurnoLoading}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          className="sort-btn-v0"
+                          onClick={guardarTurnoPasado}
+                          disabled={addTurnoLoading}
+                        >
+                          {addTurnoLoading ? "Guardando..." : "Guardar"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {historialOrdenado.length === 0 ? (
                     <div className="empty-state">
@@ -390,7 +785,7 @@ const HistorialClienteModal: React.FC<Props> = ({ show, onClose, cliente }) => {
                       <div className="datos-field">
                         <label>Nombre completo</label>
                         <span>
-                          {cliente.nombre} {cliente.apellido}
+                          {formatFullName(cliente.nombre, cliente.apellido)}
                         </span>
                       </div>
                       <div className="datos-field">

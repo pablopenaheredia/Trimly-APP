@@ -58,8 +58,8 @@ Una vez que tu amigo termine el despliegue:
 
 2. Haz login con:
 
-   - **Usuario**: `admin.trimly`
-   - **Contraseña**: `trimly2025`
+   - **Usuario**: el usuario admin que creaste en tu base de datos
+   - **Contraseña**: la contraseña que configuraste para ese usuario
 
 3. Prueba todas las funcionalidades:
    - ✅ Dashboard carga correctamente
@@ -85,6 +85,10 @@ DB_DATABASE=postgres
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 PORT=3000
+
+# Auth (JWT)
+JWT_SECRET=un_secreto_largo_y_aleatorio
+JWT_EXPIRES_IN=12h
 ```
 
 **Frontend** (ya está bien en `frontend/.env`):
@@ -145,11 +149,8 @@ Para login en la aplicación:
 
 | Username         | Contraseña | Rol      | Permisos  |
 | ---------------- | ---------- | -------- | --------- |
-| admin.trimly     | trimly2025 | admin    | Todos     |
-| maria.peluquera  | trimly2025 | empleado | Limitados |
-| carlos.estilista | trimly2025 | empleado | Limitados |
-| sofia.colorista  | trimly2025 | empleado | Limitados |
-| lucia.manicura   | trimly2025 | empleado | Limitados |
+| (tu admin)       | (definida por vos) | admin    | Todos     |
+| (tu empleado)    | (definida por vos) | empleado | Limitados |
 
 ---
 
@@ -205,7 +206,7 @@ Después de ejecutar el script de seeds, tendrás:
 
 - Verifica que el script de seeds se haya ejecutado correctamente
 - Confirma que existen usuarios en Supabase (Table Editor → usuario)
-- La contraseña correcta es: `trimly2025`
+- Confirma que estás usando la contraseña real que configuraste para ese usuario
 
 ### **Problema 5: "Las tablas no existen en Supabase"**
 
@@ -236,7 +237,7 @@ Después de ejecutar el script de seeds, tendrás:
 - [ ] Backend `.env` actualizado con credenciales de Supabase
 - [ ] Script `seeds-postgres.sql` ejecutado en Supabase
 - [ ] 30 clientes, 15 servicios, 5 usuarios y 50 productos visibles en Supabase
-- [ ] Login exitoso en producción con `admin.trimly` / `trimly2025`
+- [ ] Login exitoso en producción con tu usuario admin
 - [ ] Todas las funcionalidades probadas en producción
 - [ ] Desarrollo local funciona conectado a Supabase
 - [ ] Cambios commiteados y pusheados a GitHub

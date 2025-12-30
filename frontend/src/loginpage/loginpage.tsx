@@ -44,59 +44,10 @@ const LoginPage = () => {
     }
 
     try {
-      // ✅ VALIDACIÓN CON USUARIOS PREDEFINIDOS (temporal)
-      const usuarios = [
-        { 
-          username: 'admin', 
-          password: 'admin', 
-          user: {
-            id: 1,
-            nombre: 'Administrador',
-            apellido: 'Principal',
-            email: 'admin',
-            rol: 'admin' as const,
-            activo: true
-          }
-        },
-        { 
-          username: 'empleado', 
-          password: 'emp123', 
-          user: {
-            id: 2,
-            nombre: 'Empleado',
-            apellido: 'Ejemplo',
-            email: 'empleado',
-            rol: 'empleado' as const,
-            activo: true
-          }
-        },
-      ];
-
-      // ✅ VALIDACIÓN ESPECÍFICA DE USUARIO Y CONTRASEÑA
-      const usuarioExiste = usuarios.find(user => user.username === username);
-      
-      if (!usuarioExiste) {
-        throw new Error('El usuario es incorrecto');
-      }
-
-      if (usuarioExiste.password !== password) {
-        throw new Error('La contraseña es incorrecta');
-      }
-
-      // Simulación de delay de autenticación
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // ✅ USAR EL NUEVO SISTEMA DE AUTENTICACIÓN (persistencia según "rememberMe")
-      const mockToken = `mock_token_${usuarioExiste.user.rol}_${Date.now()}`;
-
-      // Guardar mediante el authService; si rememberMe=false, se usará sessionStorage
-      authService.setAuthData(mockToken, usuarioExiste.user, rememberMe);
-
-      // Redirigir al dashboard
+      await authService.login({ username, password }, rememberMe);
       navigate('/dashboard');
-
     } catch (error: any) {
-      setError(error.message || 'Error al iniciar sesión');
+      setError(error?.message || 'Error al iniciar sesión');
     } finally {
       setIsLoading(false);
     }
@@ -194,18 +145,6 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Demo credentials */}
-          <div className="demoCredentials">
-            <h3 className="demoTitle">Credenciales válidas:</h3>
-            <div className="demoList">
-              <p>
-                <span className="demoLabel">Admin:</span> admin / admin
-              </p>
-              <p>
-                <span className="demoLabel">Empleado:</span> empleado / emp123
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

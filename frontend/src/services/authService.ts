@@ -11,7 +11,7 @@ export interface User {
 }
 
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -36,7 +36,15 @@ class AuthService {
       });
 
       if (!response.ok) {
-        throw new Error('Credenciales inválidas');
+        let message = 'Credenciales inválidas';
+        try {
+          const body = await response.json();
+          if (typeof body?.message === 'string') message = body.message;
+          if (Array.isArray(body?.message)) message = body.message.join(', ');
+        } catch {
+          // ignore JSON parsing errors
+        }
+        throw new Error(message);
       }
 
       const data: AuthResponse = await response.json();
@@ -46,6 +54,7 @@ class AuthService {
 
       return data;
     } catch (error) {
+      if (error instanceof Error) throw error;
       throw new Error('Error al iniciar sesión');
     }
   }

@@ -22,7 +22,11 @@ export class UsuariosService {
       password: hashedPassword,
     });
 
-    return this.usuariosRepository.save(nuevoUsuario);
+    const saved = await this.usuariosRepository.save(nuevoUsuario);
+    // TypeORM puede devolver el password (aunque no se seleccione por defecto);
+    // nunca lo enviamos a cliente.
+    delete (saved as any).password;
+    return saved;
   }
 
   findAll(): Promise<Usuario[]> {
@@ -59,7 +63,9 @@ export class UsuariosService {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado.`);
     }
 
-    return this.usuariosRepository.save(usuario);
+    const saved = await this.usuariosRepository.save(usuario);
+    delete (saved as any).password;
+    return saved;
   }
 
   async checkUsername(username: string): Promise<{ exists: boolean }> {

@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   Get,
-  BadRequestException,
   Param,
   Patch,
   NotFoundException,
@@ -13,10 +12,14 @@ import { CreateUsuarioDto } from '../dto/create-usuario.dto';
 import { LoginDto } from '../dto/login.dto';
 import { UpdateUsuarioDto } from '../dto/update-usuario.dto';
 import { Usuario } from './usuario.entity';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('usuarios')
 export class UsuariosController {
-  constructor(private readonly usuariosService: UsuariosService) {}
+  constructor(
+    private readonly usuariosService: UsuariosService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post()
   create(@Body() createUsuarioDto: CreateUsuarioDto) {
@@ -50,10 +53,7 @@ export class UsuariosController {
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
-    // La lógica de login se moverá al servicio para mantener el controlador limpio.
-    // Por ahora, se deja como placeholder.
-    throw new BadRequestException(
-      'La funcionalidad de login no está completamente implementada en el controlador.',
-    );
+    // Mantener compatibilidad: delegar al auth real.
+    return this.authService.login(loginDto);
   }
 }

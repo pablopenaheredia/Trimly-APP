@@ -11,6 +11,7 @@ import { TurnosModule } from './turnos/turnos.module';
 import { FacturacionModule } from './facturacion/facturacion.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { AuthModule } from './auth/auth.module';
 
 const dbSsl = process.env.DB_SSL === 'true';
 
@@ -38,6 +39,7 @@ const dbSsl = process.env.DB_SSL === 'true';
     FacturacionModule,
     ReportesModule,
     DashboardModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

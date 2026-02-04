@@ -13,6 +13,10 @@
 }
 
 /* Modal centrado con fondo sólido */
+/* =======================================================
+   1. VERSIÓN ESCRITORIO (PC) - TU DISEÑO ORIGINAL
+   Se ve perfecto en monitores, sin scroll interno.
+   ======================================================= */
 .nuevo-usuario-modal-content {
   background: #27272a;
   border-radius: 32px;
@@ -23,6 +27,37 @@
   position: relative;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
+
+  /* Aseguramos que en PC no tenga restricciones de altura */
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+/* =======================================================
+   2. VERSIÓN CELULAR (RESPONSIVE)
+   Se activa automáticamente en pantallas pequeñas.
+   ======================================================= */
+@media (max-width: 768px) {
+  .nuevo-usuario-modal-content {
+    /* Ajuste de ancho para que no toque los bordes del celular */
+    width: 95%;
+
+    /* ESTO SOLUCIONA EL PROBLEMA DEL BOTÓN OCULTO:
+       Limitamos la altura al 90% de la pantalla */
+    max-height: 90vh;
+
+    /* Si el contenido es largo, aparece el scroll vertical */
+    overflow-y: auto;
+
+    /* Ajustes estéticos para ganar espacio */
+    padding: 24px 16px;
+    border-radius: 24px;
+
+    /* Estilo de la barra de scroll (para que combine con tu tema dark) */
+    scrollbar-width: thin;
+    scrollbar-color: #a259ff #27272a;
+  }
 }
 
 .close-btn {

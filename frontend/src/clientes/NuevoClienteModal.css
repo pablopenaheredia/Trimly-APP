@@ -10,6 +10,10 @@
 }
 
 /* Modal centrado con fondo sólido */
+/* =======================================================
+   1. VERSIÓN ESCRITORIO (PC) - TU DISEÑO ORIGINAL
+   Se verá impecable, sin barras de scroll forzadas.
+   ======================================================= */
 .nuevo-cliente-modal-content {
   background: #27272A;
   border-radius: 32px;
@@ -20,8 +24,38 @@
   position: relative;
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  
+  /* Aseguramos que en PC crezca lo que necesite sin scroll */
+  height: auto;
+  max-height: none;
+  overflow: visible;
 }
 
+/* =======================================================
+   2. VERSIÓN CELULAR (RESPONSIVE)
+   Estas reglas SOLO se activan si la pantalla es menor a 768px.
+   Aquí forzamos el scroll para que el botón no se pierda.
+   ======================================================= */
+@media (max-width: 768px) {
+  .nuevo-cliente-modal-content {
+    /* Hacemos que ocupe casi todo el ancho disponible */
+    width: 95%;
+    
+    /* LIMITAMOS LA ALTURA: Nunca más alto que el 90% de la pantalla */
+    max-height: 90vh;
+    
+    /* Si el contenido es más alto, que aparezca la barra de SCROLL */
+    overflow-y: auto;
+    
+    /* Reducimos el relleno para ganar espacio */
+    padding: 20px 16px;
+    border-radius: 24px;
+    
+    /* Scrollbar más bonito para móviles */
+    scrollbar-width: thin;
+    scrollbar-color: #a259ff #27272a;
+  }
+}
 .close-btn {
   position: absolute;
   top: 18px;

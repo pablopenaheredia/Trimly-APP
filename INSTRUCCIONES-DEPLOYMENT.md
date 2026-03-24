@@ -254,4 +254,6 @@ Si completaste todos los pasos, tu aplicación **Trimly** está:
 - ✅ Con datos iniciales para pruebas
 - ✅ Lista para ser usada por los usuarios finales
 
+dsa
+
 **¡Excelente trabajo! 🚀**
